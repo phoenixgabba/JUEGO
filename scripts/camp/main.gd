@@ -428,14 +428,7 @@ func _draw() -> void:
 	if screen == "title":
 		draw_title()
 		return
-	var wy := maxf(0.0, (size_v.y - size_v.x * 0.5625) * 0.30)
-	var zoom := 2.1 if portrait else 2.25
-	var world_width := size_v.x * zoom
-	var world_height := world_width * 0.5625
-	var camera_x := clampf(size_v.x * 0.5 - s.player.x / 1280.0 * world_width, size_v.x - world_width, 0.0)
-	if world_height > size_v.y:
-		wy = clampf(size_v.y * 0.55 - s.player.y / 720.0 * world_height, size_v.y - world_height, 0.0)
-	world_rect = Rect2(camera_x, wy, world_width, world_height)
+	world_rect = camera_world_rect()
 	world.draw(self, s, world_rect, elapsed, walking, arrivals)
 	draw_rect(world_rect, Color(0.12, 0.16, 0.34, evening_shade))
 	if map_open:
@@ -461,6 +454,25 @@ func _draw() -> void:
 	elif screen == "result":
 		clickables.clear()
 		draw_result()
+
+func camera_world_rect() -> Rect2:
+	var plaza_size := Vector2(1280, 720)
+	var fit_width := size_v.x / plaza_size.x
+	var fit_height := size_v.y / plaza_size.y
+	var scale := fit_width * 2.25
+	if mobile_layout:
+		var zoom := 3.8 if portrait else 3.4
+		scale = maxf(fit_width * zoom, fit_height * 1.2)
+
+	var world_size := plaza_size * scale
+	var focus := size_v * Vector2(0.5, 0.49 if mobile_layout else 0.55)
+	var offset := focus - s.player * scale
+	offset.x = clampf(offset.x, size_v.x - world_size.x, 0.0)
+	if world_size.y > size_v.y:
+		offset.y = clampf(offset.y, size_v.y - world_size.y, 0.0)
+	else:
+		offset.y = maxf(0.0, (size_v.y - size_v.x * 0.5625) * 0.30)
+	return Rect2(offset, world_size)
 
 func panel(r: Rect2, fill: Color = Color("203d35"), border: Color = Color("eed29b")) -> void:
 	draw_rect(r.grow(4), Color(0.11,0.17,0.15,0.32), true)
