@@ -16,6 +16,24 @@ func run() -> void:
 	main.start_game(false)
 	main.close_dialog()
 	check(main.s.phase == "talk", "inicio en plaza casi vacía")
+	check(main.world.map_locations(main.s, 0.0).size() == 4, "mapa inicial con jugador y tres contactos")
+	var map_key := InputEventKey.new()
+	map_key.keycode = KEY_M
+	map_key.pressed = true
+	main._input(map_key)
+	check(main.map_open, "M abre el mapa")
+	var start_player: Vector2 = main.s.player
+	Input.action_press("move_up")
+	main._process(0.2)
+	Input.action_release("move_up")
+	check(main.s.player == start_player, "el mapa pausa el movimiento")
+	await process_frame
+	await process_frame
+	for entry in main.clickables:
+		if entry.id == "map":
+			main.pointer_down(entry.rect.get_center(), 0)
+			break
+	check(not main.map_open, "el botón táctil cierra el mapa")
 	var y_before: float = main.s.player.y
 	Input.action_press("move_up")
 	main._process(0.2)
@@ -60,9 +78,19 @@ func run() -> void:
 	main.mini_action(); main.mini_action()
 	check(main.s.build_stage == 2, "varillas encajadas con precisión")
 	main.close_dialog(); main.interact()
-	main.action_held = true
 	main._process(2.1)
-	check(main.s.build_stage == 3, "estructura levantada al mantener")
+	check(main.s.build_stage == 2 and main.mini_lift == 0, "esperar no levanta la estructura")
+	var press := InputEventKey.new()
+	press.keycode = KEY_E
+	press.pressed = true
+	main._input(press)
+	press.echo = true
+	main._input(press)
+	check(main.mini_lift == 1, "mantener E no suma pulsaciones repetidas")
+	press.echo = false
+	for i in range(9):
+		main._input(press)
+	check(main.s.build_stage == 3, "estructura levantada con pulsaciones")
 	main.close_dialog(); main.interact()
 	for i in range(4):
 		main.mini_selected = i

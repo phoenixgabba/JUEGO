@@ -15,7 +15,6 @@ const TENT = preload("res://assets/acampada/tent.png")
 const LAID = preload("res://assets/acampada/tent_laid.png")
 const FRAMED = preload("res://assets/acampada/tent_poles.png")
 const RAISED = preload("res://assets/acampada/tent_raised.png")
-const FONT = preload("res://assets/template/fonts/ui_bold.tres")
 
 const MEETING := Vector2(615, 428)
 const SITE := Vector2(410, 392)
@@ -239,15 +238,8 @@ func draw(c: Control, s: CampState, rect: Rect2, t: float, walking: bool, arriva
 	var v := rect.size / Vector2(1280, 720)
 	c.draw_set_transform(rect.position, 0.0, v)
 	c.draw_texture_rect(PLAZA, Rect2(0, 0, 1280, 720), false)
-	# Light zone markers are labels, not buildings: the sketch depicts a future camp.
-	zone(c, Vector2(230, 347), "B")
-	zone(c, Vector2(825, 345), "A")
-	zone(c, Vector2(202, 557), "C")
-	zone(c, Vector2(200, 625), "E")
-	zone(c, Vector2(741, 590), "D")
-	zone(c, Vector2(884, 465), "H · PLAZA 15M")
-	if s.phase == "meeting":
-		marker(c, MEETING, "ASAMBLEA", t)
+	for item in objective_locations(s, t):
+		marker(c, item.pos, t)
 	if s.phase == "materials":
 		for k in MATERIALS:
 			if not s.collected[k]:
@@ -255,40 +247,23 @@ func draw(c: Control, s: CampState, rect: Rect2, t: float, walking: bool, arriva
 				var p: Vector2 = MATERIALS[k]
 				c.draw_circle(p, 8, Color(1.0, 0.85, 0.43, 0.25))
 				c.draw_texture_rect(texture, Rect2(p - Vector2(6, 10), Vector2(12, 12)), false)
-				c.draw_string(FONT, p + Vector2(-34, -12), str(k).to_upper(), HORIZONTAL_ALIGNMENT_CENTER, 68, 8, Color("263e39"))
-	if s.phase == "build":
-		marker(c, camp_build_point(s), "MONTAR", t)
-	if s.tents > 0:
-		zone(c, SITE + Vector2(-28, 8), "MATERIAL")
 	if s.phase == "build" and s.build_stage > 0:
 		var tex: Texture2D = LAID
 		if s.build_stage == 2: tex = FRAMED
 		if s.build_stage == 3: tex = RAISED
 		if s.build_stage >= 4: tex = TENT
 		c.draw_texture_rect(tex, Rect2(camp_build_point(s) - TENT_OFFSET, TENT_SIZE), false)
-	if s.phase == "commissions":
-		marker(c, COMMISSION_POINTS[s.commissions], COMMISSION_NAMES[s.commissions].to_upper(), t)
-	if s.phase == "expansion":
-		if s.delivery == "assign":
-			marker(c, next_pitch(s), "ELIGE SITIO", t)
-			for i in range(s.tents - 1, mini(s.tents + 2, DAY_ONE_TENTS - 1)):
-				var pitch := pitch_at(s, i)
-				c.draw_rect(Rect2(pitch - TENT_GROUND, TENT_GROUND * 2.0), Color("ffed9c"), false, 1.0)
-		elif s.delivery == "offer":
-			marker(c, ENTRANCE, "LLEGADA", t)
-		elif s.delivery == "unload":
-			marker(c, SITE, "GUARDAR MATERIAL", t)
-		elif s.delivery == "close":
-			marker(c, ORGANIZATION, "CIERRE DEL DÍA", t)
-	for i in range(s.commissions):
-		zone(c, COMMISSION_POINTS[i] + Vector2(-27, 12), COMMISSION_NAMES[i].to_upper())
+	if s.phase == "expansion" and s.delivery == "assign":
+		for i in range(s.tents - 1, mini(s.tents + 2, DAY_ONE_TENTS - 1)):
+			var pitch := pitch_at(s, i)
+			c.draw_rect(Rect2(pitch - TENT_GROUND, TENT_GROUND * 2.0), Color("ffed9c"), false, 1.0)
 	# Characters are ordered by their feet, so overlapping still feels spatial.
 	var actors: Array = MAP.scenery.duplicate()
 	actors.append_array([
-		{"name":"Patricia", "pos":npc_pos("Patricia", s, t), "tex":PATRICIA},
-		{"name":"Alejandro", "pos":npc_pos("Alejandro", s, t), "tex":ALEJANDRO},
-		{"name":"Marina", "pos":npc_pos("Marina", s, t), "tex":MARINA},
-		{"name":"Tú", "pos":s.player, "tex":PLAYER, "walking":walking}
+		{"pos":npc_pos("Patricia", s, t), "tex":PATRICIA},
+		{"pos":npc_pos("Alejandro", s, t), "tex":ALEJANDRO},
+		{"pos":npc_pos("Marina", s, t), "tex":MARINA},
+		{"pos":s.player, "tex":PLAYER, "walking":walking}
 	])
 	if s.tents > 0:
 		actors.append({"pos":SITE,"pitch":0})
@@ -309,9 +284,9 @@ func draw(c: Control, s: CampState, rect: Rect2, t: float, walking: bool, arriva
 			"leaving": pos = delivery_point(s, crowd_position(s.tents - 1, s), ENTRANCE)
 			"returning": pos = delivery_point(s, ENTRY_APPROACH, ENTRANCE)
 			"placing": pos = delivery_point(s, ENTRANCE, next_pitch(s))
-		actors.append({"pos":pos, "tex":CROWD_TEXTURES[(s.tents - 1) % 4], "name":"Con tienda" if s.delivery in ["assign", "placing"] else "Llegada", "walking":s.delivery in ["leaving", "returning", "placing"]})
+		actors.append({"pos":pos, "tex":CROWD_TEXTURES[(s.tents - 1) % 4], "walking":s.delivery in ["leaving", "returning", "placing"]})
 	for i in range(arrival_positions.size()):
-		actors.append({"name":"", "pos":arrival_positions[i], "tex":CROWD_TEXTURES[i % 4]})
+		actors.append({"pos":arrival_positions[i], "tex":CROWD_TEXTURES[i % 4]})
 	for i in range(pitch_count(s)):
 		actors.append({"pos": pitch_at(s, i), "pitch": i})
 	actors.sort_custom(func(a, b): return a.pos.y < b.pos.y)
@@ -328,7 +303,7 @@ func draw(c: Control, s: CampState, rect: Rect2, t: float, walking: bool, arriva
 		if a.has("pitch"):
 			draw_pitch(c, a.pos, a.pitch)
 			continue
-		actor(c, a.tex, a.pos, str(a.name), t, bool(a.get("walking", s.phase not in ["talk", "meeting"])))
+		actor(c, a.tex, a.pos, t, bool(a.get("walking", s.phase not in ["talk", "meeting"])))
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 static func camp_build_point(s: CampState) -> Vector2:
@@ -338,24 +313,43 @@ func box(c: Control, pos: Vector2) -> void:
 	c.draw_rect(Rect2(pos - Vector2(3, 4), Vector2(6, 5)), Color("9a7244"))
 	c.draw_line(pos - Vector2(3, 3), pos + Vector2(3, -3), Color("d0aa71"))
 
-func zone(c: Control, pos: Vector2, text: String) -> void:
-	var width := 28.0 if text.length() == 1 else 128.0
-	c.draw_rect(Rect2(pos.x, pos.y, width, 23), Color(0.14, 0.22, 0.19, 0.67), true)
-	c.draw_string(FONT, pos + Vector2(7, 16), text, HORIZONTAL_ALIGNMENT_LEFT, width - 8, 11, Color("fff1ce"))
+func map_locations(s: CampState, t: float) -> Array[Dictionary]:
+	var locations: Array[Dictionary] = [{"label":"Tú", "pos":s.player, "kind":"player"}]
+	if s.tents > 0:
+		locations.append({"label":"Almacén", "pos":SITE, "kind":"built"})
+	for i in range(s.commissions):
+		locations.append({"label":COMMISSION_NAMES[i], "pos":COMMISSION_POINTS[i], "kind":"built"})
+	locations.append_array(objective_locations(s, t))
+	return locations
 
-func marker(c: Control, pos: Vector2, text: String, t: float) -> void:
+func objective_locations(s: CampState, t: float) -> Array[Dictionary]:
+	var items: Array[Dictionary] = []
+	match s.phase:
+		"talk":
+			for name in ["Patricia", "Alejandro", "Marina"]:
+				if not s.talked[name]:
+					items.append({"label":name, "pos":npc_pos(name,s,t), "kind":"goal"})
+		"meeting": items.append({"label":"Asamblea", "pos":MEETING, "kind":"goal"})
+		"materials":
+			for key in MATERIALS:
+				if not s.collected[key]:
+					items.append({"label":str(key).capitalize(), "pos":MATERIALS[key], "kind":"goal"})
+		"build": items.append({"label":"Montar tienda", "pos":camp_build_point(s), "kind":"goal"})
+		"commissions":
+			items.append({"label":"Formar " + COMMISSION_NAMES[s.commissions], "pos":COMMISSION_POINTS[s.commissions], "kind":"goal"})
+		"expansion":
+			match s.delivery:
+				"offer": items.append({"label":"Llegada", "pos":ENTRANCE, "kind":"goal"})
+				"assign": items.append({"label":"Elegir parcela", "pos":next_pitch(s), "kind":"goal"})
+				"unload": items.append({"label":"Guardar material", "pos":SITE, "kind":"goal"})
+				"close": items.append({"label":"Cerrar el día", "pos":ORGANIZATION, "kind":"goal"})
+	return items
+
+func marker(c: Control, pos: Vector2, t: float) -> void:
 	var r := 9.0 + sin(t * 3.0)
 	c.draw_arc(pos, r, 0, TAU, 32, Color("ffed9c"), 1.0)
-	c.draw_circle(pos, 1.5, Color("fff5cb"))
-	c.draw_rect(Rect2(pos.x - 49, pos.y - 29, 98, 13), Color("213c35"), true)
-	c.draw_string(FONT, pos + Vector2(-47, -19), text, HORIZONTAL_ALIGNMENT_CENTER, 94, 9, Color("fff0bb"))
 
-func actor(c: Control, tex: Texture2D, pos: Vector2, name: String, t: float, walking: bool) -> void:
+func actor(c: Control, tex: Texture2D, pos: Vector2, t: float, walking: bool) -> void:
 	c.draw_circle(pos, 4, Color(0.16, 0.14, 0.10, 0.27))
 	var bob := sin(t * 9.0 + pos.x) * 0.5 if walking else sin(t * 1.7 + pos.x) * 0.15
 	c.draw_texture_rect(tex, Rect2(pos + Vector2(-5, -16 + bob), Vector2(10, 17)), false)
-	if name.is_empty(): return
-	var text_width := ceilf(FONT.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x)
-	var label_width := text_width + 12.0
-	c.draw_rect(Rect2(pos + Vector2(-label_width / 2.0, -32 + bob), Vector2(label_width, 13)), Color(0.11, 0.19, 0.17, 0.83))
-	c.draw_string(FONT, pos + Vector2(-text_width / 2.0, -22 + bob), name, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("fff9e8"))

@@ -27,7 +27,9 @@ sube a seis tiendas y completa el almacén con 1000 puntos. Forma Organización
 con seis tiendas, Cocina con doce y Comunicación con diecinueve. Entre esas
 actividades siguen llegando tiendas propias y donadas. La plaza se oscurece
 con cada comisión y el día termina de noche con 25 tiendas en cuatro hileras.
-Pulsa **M** para alternar entre cámara de seguimiento y vista general.
+Abre el mapa con **M** o con el botón táctil **Mapa**. Las tiendas y las
+comisiones aparecen al montarlas. Para levantar la tienda, pulsa **E**
+o el botón de montaje repetidamente.
 
 # Generic Game Template
 
@@ -390,5 +392,3 @@ python3 tools/install_cjk_font.py --check
 ```
 Checks cover key parity, Chinese/player-name glyphs and the primary font. Default runtime/loader fonts are OFL; keep each `<Family>-OFL.txt` beside its font. `tools/build_cjk_font_subset.py` launches the default-font installer; fixed loader text uses a separately pinned subset.
 
-#   J U E G O  
- 

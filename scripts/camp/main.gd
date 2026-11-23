@@ -9,7 +9,7 @@ const BOLD = preload("res://assets/template/fonts/ui_bold.tres")
 const TITLE = preload("res://assets/template/fonts/display/generic_title.tres")
 
 var s: CampState = State.new()
-var plaza_overview := false
+var map_open := false
 var world: CampWorld = World.new()
 var screen := "title"
 var paused := false
@@ -25,13 +25,12 @@ const COMMISSION_GAME := ["organization", "puzzle", "communication"]
 var mini := false
 var mini_piece := Vector2(240, 235)
 var mini_success := 0
+const LIFT_GOAL := 10.0
 var mini_lift := 0.0
 var mini_pegs := [false, false, false, false]
 var mini_selected := 0
 var dragging := false
 var touch_directions := {}
-var action_held := false
-var mouse_held := false
 var elapsed := 0.0
 var evening_shade := 0.0
 var save_timer := 0.0
@@ -58,7 +57,7 @@ func _process(delta: float) -> void:
 	elapsed += delta
 	evening_shade = move_toward(evening_shade, s.light_level(), delta * 0.16)
 	if toast_time > 0: toast_time -= delta
-	if screen != "play" or paused:
+	if screen != "play" or paused or map_open:
 		queue_redraw()
 		return
 	if mini:
@@ -68,12 +67,7 @@ func _process(delta: float) -> void:
 			mini_piece.x = clampf(mini_piece.x, 105, 715)
 			mini_piece.y = clampf(mini_piece.y, 125, 345)
 		elif s.build_stage == 2:
-			var hold := action_held or mouse_held or Input.is_key_pressed(KEY_E) or Input.is_key_pressed(KEY_SPACE)
-			if hold:
-				mini_lift += delta
-				if mini_lift >= 2.0: complete_build_stage()
-			else:
-				mini_lift = maxf(0.0, mini_lift - delta * 0.25)
+			mini_lift = maxf(0.0, mini_lift - delta * 1.5)
 	elif commission_open:
 		activity.tick(delta)
 		if activity.done: complete_activity()
@@ -207,6 +201,7 @@ func start_game(resume: bool) -> void:
 		arrivals = []
 	evening_shade = s.light_level()
 	screen = "play"
+	map_open = false
 	paused = false
 	mini = false
 	commission_open = false
@@ -367,7 +362,9 @@ func mini_action() -> void:
 				if mini_success >= 2: complete_build_stage()
 				else: announce("¡Una varilla encajada! Falta otra.")
 			else: announce("Casi: espera a que el indicador entre en la franja verde.")
-		2: pass
+		2:
+			mini_lift += 1.0
+			if mini_lift >= LIFT_GOAL: complete_build_stage()
 		3:
 			mini_pegs[mini_selected] = true
 			if not mini_pegs.has(false): complete_build_stage()
@@ -384,8 +381,6 @@ func complete_build_stage() -> void:
 	s.respect += 12
 	mini = false
 	dragging = false
-	action_held = false
-	mouse_held = false
 	if s.build_stage == 4:
 		if s.tents == 0:
 			s.tents = 1
@@ -426,16 +421,19 @@ func _draw() -> void:
 	if screen == "title":
 		draw_title()
 		return
-	var wy := 190.0 if portrait and plaza_overview else maxf(0.0, (size_v.y - size_v.x * 0.5625) * 0.30)
-	var zoom := 1.0 if plaza_overview else (2.1 if portrait else 2.25)
+	var wy := maxf(0.0, (size_v.y - size_v.x * 0.5625) * 0.30)
+	var zoom := 2.1 if portrait else 2.25
 	var world_width := size_v.x * zoom
 	var world_height := world_width * 0.5625
 	var camera_x := clampf(size_v.x * 0.5 - s.player.x / 1280.0 * world_width, size_v.x - world_width, 0.0)
-	if world_height > size_v.y and (not portrait or not plaza_overview):
+	if world_height > size_v.y:
 		wy = clampf(size_v.y * 0.55 - s.player.y / 720.0 * world_height, size_v.y - world_height, 0.0)
 	world_rect = Rect2(camera_x, wy, world_width, world_height)
 	world.draw(self, s, world_rect, elapsed, walking, arrivals)
 	draw_rect(world_rect, Color(0.12, 0.16, 0.34, evening_shade))
+	if map_open:
+		draw_camp_map()
+		return
 	draw_hud()
 	if screen == "play":
 		if not mini and not dialogue and not paused and not commission_open: draw_touch_controls()
@@ -563,6 +561,41 @@ func draw_portrait_diary(y: float) -> void:
 	if h > 500:
 		text(Vector2(x+26,y+h-27), "Cruceta para caminar · ACCIÓN cerca de personas y objetos", 23, Color("748873"))
 
+func toggle_map() -> void:
+	map_open = not map_open
+	touch_directions.clear()
+	clickables.clear()
+	queue_redraw()
+
+func draw_camp_map() -> void:
+	draw_rect(Rect2(Vector2.ZERO, size_v), Color(0.04,0.09,0.07,0.94))
+	var width := minf(size_v.x - 44, (size_v.y - 205) * 16.0 / 9.0)
+	var start := Vector2((size_v.x - width) / 2.0, 70)
+	var scale := width / 1280.0
+	var map_rect := Rect2(start, Vector2(width,720 * scale))
+	text(start + Vector2(0,-22), "Mapa · %d/%d tiendas" % [s.tents, World.DAY_ONE_TENTS], 20)
+	button(Rect2(map_rect.end.x - 118,10,118,44), "Cerrar", "map")
+	draw_texture_rect(World.PLAZA, map_rect, false)
+	for i in range(World.pitch_count(s)):
+		var point := start + World.pitch_at(s,i) * scale
+		draw_circle(point, 3.0, Color("b0db96"))
+	var points := world.map_locations(s, elapsed)
+	var offset_counts := {}
+	for i in range(points.size()):
+		var item := points[i]
+		var point: Vector2 = start + item.pos * scale
+		var count: int = offset_counts.get(point,0)
+		offset_counts[point] = count + 1
+		if count > 0: point.x += count * 22
+		var color := Color("f5c172") if item.kind == "goal" else (Color("a3d58b") if item.kind == "built" else Color("8bd5ed"))
+		draw_circle(point,11,Color("172723"))
+		draw_arc(point,11,0,TAU,26,color,2)
+		text(point + Vector2(-11,5),str(i+1),13,color,true,22,HORIZONTAL_ALIGNMENT_CENTER)
+		var columns := 2 if width < 680 else 3
+		var column_width := width / columns
+		var label_pos := map_rect.end - Vector2(width,0) + Vector2(i % columns * column_width, 27 + floori(float(i) / columns) * 25)
+		text(label_pos,"%d  %s" % [i+1,item.label],16,color,true,column_width)
+
 func draw_touch_controls() -> void:
 	var y := size_v.y - (210 if portrait else 105)
 	var x := 205.0 if portrait else 106.0
@@ -580,7 +613,13 @@ func draw_touch_controls() -> void:
 	draw_arc(ap, ar, 0, TAU, 40, Color("fff2ce"), 3)
 	text(ap+Vector2(-ar,8), "ACCIÓN", 21 if portrait else 14, Color("263d32"), true, ar*2, HORIZONTAL_ALIGNMENT_CENTER)
 	clickables.append({"rect":Rect2(ap-Vector2(ar,ar),Vector2(ar*2,ar*2)),"id":"action"})
-	if not portrait: text(Vector2(224,size_v.y-21), "CAMINAR: WASD / FLECHAS    ·    INTERACTUAR: E   ·   VISTA GENERAL: M", 13, Color("fff5df"), true)
+	var map_radius := ar * 0.68
+	var map_pos := ap - Vector2(0, ar + map_radius + 13)
+	draw_circle(map_pos, map_radius, Color("36594b"))
+	draw_arc(map_pos, map_radius, 0, TAU, 36, Color("fff2ce"), 2)
+	text(map_pos + Vector2(-map_radius, 5), "MAPA", 18 if portrait else 12, Color("fff5df"), true, map_radius * 2, HORIZONTAL_ALIGNMENT_CENTER)
+	clickables.append({"rect":Rect2(map_pos - Vector2.ONE * map_radius,Vector2.ONE * map_radius * 2), "id":"map"})
+	if not portrait: text(Vector2(224,size_v.y-21), "CAMINAR: WASD / FLECHAS    ·    INTERACTUAR: E   ·   MAPA: M", 13, Color("fff5df"), true)
 
 func draw_toast() -> void:
 	var y := minf(world_rect.end.y - 68, size_v.y - 95) if not portrait else size_v.y * 0.72
@@ -661,11 +700,11 @@ func draw_minigame() -> void:
 		text(p+Vector2(0,355), "ENCAJADAS %d / 2" % mini_success, 18, Color("345445"), true, 820, HORIZONTAL_ALIGNMENT_CENTER)
 		button(Rect2(p+Vector2(290,406),Vector2(240,50)), "ENCAJAR · E", "mini_action", true)
 	elif s.build_stage == 2:
-		paragraph(p+Vector2(28,76), "Mantén pulsado el botón o E para levantar la estructura.", 750, 22, Color("405446"))
+		paragraph(p+Vector2(28,76), "Pulsa E o el botón repetidamente para levantar la tienda. La barra baja si paras.", 750, 22, Color("405446"))
 		draw_texture_rect(World.RAISED, Rect2(p+Vector2(310,100),Vector2(200,180)), false)
 		draw_rect(Rect2(p+Vector2(145,305),Vector2(530,24)), Color("cabd9c"), true)
-		draw_rect(Rect2(p+Vector2(145,305),Vector2(530*clampf(mini_lift/2.0,0,1),24)), Color("64a276"), true)
-		button(Rect2(p+Vector2(265,386),Vector2(290,65)), "MANTÉN PULSADO", "hold", true)
+		draw_rect(Rect2(p+Vector2(145,305),Vector2(530*clampf(mini_lift/LIFT_GOAL,0,1),24)), Color("64a276"), true)
+		button(Rect2(p+Vector2(265,386),Vector2(290,65)), "PULSA RÁPIDO · E", "mini_action", true)
 	else:
 		paragraph(p+Vector2(28,76), "Toca las cuatro piquetas. En PC: flechas y E.", 750, 22, Color("405446"))
 		draw_texture_rect(World.RAISED, Rect2(p+Vector2(292,112),Vector2(236,220)), false)
@@ -691,7 +730,10 @@ func _input(event: InputEvent) -> void:
 				activity.key(event.keycode)
 			return
 		if event.keycode == KEY_M and screen == "play" and not mini and not dialogue and not paused:
-			plaza_overview = not plaza_overview
+			toggle_map()
+			return
+		if map_open:
+			if event.keycode == KEY_ESCAPE: toggle_map()
 			return
 		if event.keycode == KEY_ESCAPE:
 			if mini: mini = false
@@ -746,9 +788,9 @@ func pointer_down(pos: Vector2, index: int) -> void:
 				"choice1": choose_assembly(1)
 				"dir": touch_directions[index] = entry.dir
 				"action": interact()
+				"map": toggle_map()
 				"mini_action": mini_action()
 				"mini_close": mini = false
-				"hold": action_held = true; mouse_held = index == -1
 				_:
 					if id.begins_with("peg"):
 						mini_selected = int(id.substr(3))
@@ -757,8 +799,6 @@ func pointer_down(pos: Vector2, index: int) -> void:
 
 func pointer_up(_pos: Vector2, index: int) -> void:
 	touch_directions.erase(index)
-	action_held = false
-	mouse_held = false
 	if dragging:
 		dragging = false
 		if mini and s.build_stage == 0 and mini_piece.distance_to(Vector2(560,235)) < 65: complete_build_stage()
