@@ -238,21 +238,26 @@ func key(code: int) -> void:
 
 func draw(game: Control) -> void:
 	var size := game.get_viewport_rect().size
-	var scale := minf(1.0, minf((size.x - 24) / 760.0, (size.y - 24) / 520.0))
+	var mobile_storage: bool = game.mobile_layout and mode == "storage"
+	var vertical_storage: bool = mobile_storage and game.portrait
+	var panel_size := Vector2(420, 755) if vertical_storage else Vector2(760, 520)
+	var scale := minf((size.x - 24) / panel_size.x, (size.y - 24) / panel_size.y)
+	if not mobile_storage:
+		scale = minf(1.0, scale)
 	game.draw_rect(Rect2(Vector2.ZERO,size), Color(0.04,0.10,0.08,.79))
 	game.mini_scale = scale
-	game.mini_rect = Rect2((size - Vector2(760,520) * scale) * .5, Vector2(760,520) * scale)
+	game.mini_rect = Rect2((size - panel_size * scale) * .5, panel_size * scale)
 	game.draw_set_transform(game.mini_rect.position, 0, Vector2.ONE * scale)
 	game.drawing_mini = true
-	game.panel(Rect2(0,0,760,520))
-	game.button(Rect2(698,12,46,42), "×", "commission_close")
+	game.panel(Rect2(Vector2.ZERO, panel_size))
+	game.button(Rect2(panel_size.x - 62,12,46,42), "×", "commission_close")
 	if failed:
 		game.text(Vector2(38,92), "Vuelve a intentarlo", 30)
 		game.text(Vector2(38,137), "Puedes reiniciar el minijuego.", 19)
 		btn(game, Rect2(38,185,225,52), "Reintentar", "retry")
 	else:
 		match mode:
-			"storage": draw_storage(game)
+			"storage": draw_storage(game, vertical_storage)
 			"communication": draw_letters(game)
 			"puzzle": draw_puzzle(game)
 			"catch": draw_catch(game)
@@ -263,18 +268,27 @@ func draw(game: Control) -> void:
 func btn(game: Control, rect: Rect2, label: String, value: String) -> void:
 	game.button(rect,label,"activity:" + value)
 
-func draw_storage(game: Control) -> void:
+func draw_storage(game: Control, vertical: bool) -> void:
 	game.text(Vector2(30,47), "Almacén · %d/%d puntos" % [score,SCORE_GOAL], 28)
-	game.text(Vector2(30,77), "Completa diez filas. Cada fila vale 100 puntos.", 18)
-	var origin := Vector2(44,96)
+	game.text(Vector2(30,77), "Completa 10 filas · 100 puntos por fila" if vertical else "Completa diez filas. Cada fila vale 100 puntos.", 18)
+	var origin := Vector2(42,94) if vertical else Vector2(44,96)
+	var stride := 42.0 if vertical else 31.0
+	var tile_size := Vector2.ONE * (stride - 2.0)
 	for y in range(12):
 		for x in range(8):
 			var p := Vector2i(x,y)
-			var r := Rect2(origin + Vector2(p)*31,Vector2(29,29))
+			var r := Rect2(origin + Vector2(p) * stride, tile_size)
 			game.draw_rect(r, COLORS[board[p]] if board.has(p) else Color("31493f"))
 	for offset in piece:
-		if (cell+offset).y >= 0:
-			game.draw_rect(Rect2(origin + Vector2(cell+offset)*31,Vector2(29,29)), COLORS[turn % COLORS.size()])
+		if (cell + offset).y >= 0:
+			game.draw_rect(Rect2(origin + Vector2(cell + offset) * stride, tile_size), COLORS[turn % COLORS.size()])
+	if vertical:
+		btn(game,Rect2(24,614,116,54),"Izquierda","left")
+		btn(game,Rect2(152,614,116,54),"Girar","turn")
+		btn(game,Rect2(280,614,116,54),"Derecha","right")
+		btn(game,Rect2(24,681,180,54),"Bajar","down")
+		btn(game,Rect2(216,681,180,54),"Soltar","drop")
+		return
 	btn(game,Rect2(346,122,160,50),"Izquierda","left")
 	btn(game,Rect2(520,122,160,50),"Derecha","right")
 	btn(game,Rect2(346,190,334,50),"Girar · ↑","turn")
