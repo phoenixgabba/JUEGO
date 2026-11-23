@@ -44,10 +44,16 @@ var mini_rect := Rect2()
 var mini_scale := 1.0
 var drawing_mini := false
 var portrait := false
+var touch_layout := false
+var mobile_layout := false
+var hud_expanded := false
 var size_v := Vector2(1280, 720)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	touch_layout = DisplayServer.is_touchscreen_available()
+	if OS.has_feature("web"):
+		touch_layout = touch_layout or JavaScriptBridge.eval("matchMedia('(any-pointer: coarse)').matches") == true
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	set_process(true)
 	set_process_input(true)
@@ -416,6 +422,7 @@ func objective() -> String:
 func _draw() -> void:
 	size_v = get_viewport_rect().size
 	portrait = size_v.y > size_v.x * 1.15
+	mobile_layout = touch_layout or portrait
 	clickables.clear()
 	draw_rect(Rect2(Vector2.ZERO,size_v), Color("e5dcc3"), true)
 	if screen == "title":
@@ -434,10 +441,11 @@ func _draw() -> void:
 	if map_open:
 		draw_camp_map()
 		return
-	draw_hud()
+	if not mobile_layout or (not mini and not dialogue and not paused and not commission_open and screen == "play"):
+		draw_hud()
 	if screen == "play":
 		if not mini and not dialogue and not paused and not commission_open: draw_touch_controls()
-		if toast_time > 0 and not dialogue and not mini: draw_toast()
+		if toast_time > 0 and not dialogue and not mini and not paused and not commission_open: draw_toast()
 		if commission_open:
 			clickables.clear()
 			activity.draw(self)
@@ -480,11 +488,11 @@ func paragraph(p: Vector2, value: String, width: float, font_size: int, color: C
 		text(Vector2(p.x,y), line, font_size, color)
 		y += font_size * line_height
 
-func button(r: Rect2, label: String, id: String, highlight: bool = false) -> void:
+func button(r: Rect2, label: String, id: String, highlight: bool = false, font_size: int = 0) -> void:
 	var col := Color("f0bc66") if highlight else Color("36594b")
 	draw_rect(r, col, true)
 	draw_rect(r, Color("f7daa0"), false, 2)
-	var fs := 22 if drawing_mini or not portrait else 36
+	var fs := font_size if font_size > 0 else (22 if drawing_mini or not portrait else 36)
 	text(Vector2(r.position.x, r.position.y + r.size.y * 0.63), label, fs, Color("27392f") if highlight else Color("fff5df"), true, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 	clickables.append({"rect":mini_hit(r) if drawing_mini else r, "id":id})
 
@@ -494,9 +502,12 @@ func mini_hit(r: Rect2) -> Rect2:
 func draw_title() -> void:
 	draw_texture_rect(COVER, Rect2(Vector2.ZERO,size_v), false)
 	draw_rect(Rect2(Vector2.ZERO,size_v), Color(0.10,0.18,0.15,0.30), true)
-	var w := minf(590, size_v.x - 56)
+	var w := minf(1130 if portrait else 590, size_v.x - 56)
 	var x := 42.0 if not portrait else (size_v.x - w) / 2
 	var y := 72.0 if not portrait else size_v.y * 0.16
+	if portrait:
+		draw_portrait_title(x, y, w)
+		return
 	panel(Rect2(x,y,w,520), Color(0.10,0.20,0.17,0.92))
 	text(Vector2(x+30,y+45), "UN JUEGO DE PLAZA Y COMUNIDAD", 15, Color("f1c873"), true)
 	draw_string(TITLE, Vector2(x+27,y+120), "ACAMPADA", HORIZONTAL_ALIGNMENT_LEFT, w-40, 53, Color("fff2d7"))
@@ -519,18 +530,27 @@ func draw_title() -> void:
 		button(Rect2(r.position+Vector2(25,140),Vector2(470,45)), "SÍ, NUEVA PARTIDA", "confirm_new", true)
 		button(Rect2(r.position+Vector2(25,200),Vector2(470,45)), "CANCELAR", "cancel_new")
 
+func draw_portrait_title(x: float, y: float, w: float) -> void:
+	var has_save := FileAccess.file_exists(State.SAVE_PATH)
+	panel(Rect2(x, y, w, 760), Color(0.10,0.20,0.17,0.92))
+	draw_string(TITLE, Vector2(x + 45, y + 125), "ACAMPADA", HORIZONTAL_ALIGNMENT_LEFT, w - 90, 96, Color("fff2d7"))
+	draw_string(TITLE, Vector2(x + 45, y + 230), "VALÈNCIA", HORIZONTAL_ALIGNMENT_LEFT, w - 90, 96, Color("f5bf6d"))
+	paragraph(Vector2(x + 48, y + 318), "Un primer día para escucharnos, levantar refugio y hacer sitio a quienes llegan.", w - 96, 49)
+	if confirm_new:
+		paragraph(Vector2(x + 48, y + 470), "¿Borrar la partida guardada y empezar de nuevo?", w - 96, 48)
+		button(Rect2(x + 48, y + 560, (w - 120) * 0.5, 140), "Sí, empezar", "confirm_new", true, 46)
+		button(Rect2(x + 60 + (w - 120) * 0.5, y + 560, (w - 120) * 0.5, 140), "Cancelar", "cancel_new", false, 46)
+		return
+	button(Rect2(x + 48, y + 440, w - 96, 140), "Continuar partida" if has_save else "Empezar el día 1", "continue" if has_save else "start", true, 52)
+	if has_save:
+		button(Rect2(x + 48, y + 600, (w - 120) * 0.5, 136), "Nueva partida", "new", false, 46)
+	var license_x := x + 72 + (w - 120) * 0.5 if has_save else x + 48
+	var license_width := (w - 120) * 0.5 if has_save else w - 96
+	button(Rect2(license_x, y + 600, license_width, 136), "Licencias", "licenses", false, 46)
+
 func draw_hud() -> void:
-	if portrait:
-		panel(Rect2(16,16,size_v.x-32,150), Color(0.11,0.22,0.19,0.95))
-		text(Vector2(42,62), "ACAMPADA VALÈNCIA · " + s.daylight(), 31, Color("fff2d7"), true)
-		text(Vector2(42,111), "DÍA 1  ·  VIDA %d   ENERGÍA %d   RESPETO %d" % [s.health,s.energy,s.respect], 25, Color("f3ce89"), true)
-		text(Vector2(42,148), "CAJA %d €   ·   RECURSOS %d   ·   BIENESTAR %d   ·   PERSONAS %d" % [s.cash,s.resources(),s.wellbeing,s.people], 21)
-		var oy := minf(world_rect.end.y + 24, size_v.y * 0.58)
-		panel(Rect2(22,oy,size_v.x-44,140), Color(0.13,0.25,0.20,0.96))
-		text(Vector2(48,oy+42), "AHORA EN LA PLAZA", 23, Color("f2c66f"), true)
-		paragraph(Vector2(48,oy+83), objective(), size_v.x-100, 27)
-		draw_portrait_diary(oy + 164)
-		button(Rect2(size_v.x-160,22,125,55), "PAUSA", "pause")
+	if mobile_layout:
+		draw_mobile_hud()
 	else:
 		panel(Rect2(14,14,size_v.x-28,62), Color(0.10,0.20,0.17,0.95))
 		text(Vector2(32,40), "ACAMPADA", 19, Color("f6ce80"), true)
@@ -541,25 +561,38 @@ func draw_hud() -> void:
 		text(Vector2(size_v.x-309,121), "AHORA EN LA PLAZA", 13, Color("eac379"), true)
 		paragraph(Vector2(size_v.x-309,145), objective(), 268, 16)
 
-func draw_portrait_diary(y: float) -> void:
-	var available := size_v.y - y - 420.0
-	if available < 300: return
-	var h := minf(available, 590.0)
-	var x := 22.0
-	panel(Rect2(x,y,size_v.x-44,h), Color("f9f0da"), Color("91a78b"))
-	text(Vector2(x+26,y+42), "DIARIO DE LA PLAZA", 29, Color("b26743"), true)
-	var order := ["talk", "meeting", "materials", "build", "commissions", "expansion", "finished"]
-	var index := order.find(s.phase)
-	var labels := ["Conocer a las primeras personas", "Celebrar la primera asamblea", "Reunir los materiales", "Levantar y asegurar la tienda", "Formar tres comisiones", "Montar 25 tiendas y cerrar el día"]
-	var row := minf(67.0, (h-92)/6.0)
-	for i in range(6):
-		var yy := y+82+i*row
-		var done := index > i
-		draw_circle(Vector2(x+42,yy-8), 12, Color("6c9d70") if done else Color("d8c9a7"))
-		if done: text(Vector2(x+33,yy-2), "+", 18, Color("ffffff"), true)
-		text(Vector2(x+70,yy), labels[i], 29, Color("344d3d") if done else Color("7d8975"), done)
-	if h > 500:
-		text(Vector2(x+26,y+h-27), "Cruceta para caminar · ACCIÓN cerca de personas y objetos", 23, Color("748873"))
+func mobile_text_size() -> int:
+	return 52 if portrait else 36
+
+func draw_mobile_hud() -> void:
+	var fs := mobile_text_size()
+	var margin := fs * 0.55
+	var h := fs * 2.75
+	var width := minf(size_v.x - margin * 2, fs * 24.0)
+	var pause_width := fs * 3.5
+	var button_width := width - pause_width - margin
+	button(Rect2(margin, margin, button_width, h), "Ocultar información" if hud_expanded else "Ver objetivo y estado", "hud_toggle", false, fs)
+	button(Rect2(margin + button_width + margin, margin, pause_width, h), "Pausa", "pause", false, fs)
+	if not hud_expanded:
+		return
+	var y := h + margin * 2
+	var step := fs * 1.28
+	var content_width := width - margin * 2
+	var status := "Día 1 · %s · %02d:00   |   Vida %d · Energía %d · Respeto %d · Caja %d € · Recursos %d · Bienestar %d · Personas %d" % [
+		s.daylight(), s.clock_hour(), s.health, s.energy, s.respect, s.cash, s.resources(), s.wellbeing, s.people
+	]
+	var goal_lines := wrap_lines(objective(), BOLD, fs, content_width)
+	var status_size := roundi(fs * 0.9)
+	var status_lines := wrap_lines(status, BODY, status_size, content_width)
+	panel(Rect2(margin, y, width, margin * 2 + step * (goal_lines.size() + status_lines.size()) + 12), Color("203d35"))
+	var baseline := y + margin + fs
+	for line in goal_lines:
+		text(Vector2(margin * 2, baseline), line, fs, Color("fff2d7"), true)
+		baseline += step
+	baseline += 12
+	for line in status_lines:
+		text(Vector2(margin * 2, baseline), line, status_size, Color("f3ce89"))
+		baseline += step
 
 func toggle_map() -> void:
 	map_open = not map_open
@@ -622,17 +655,32 @@ func draw_touch_controls() -> void:
 	if not portrait: text(Vector2(224,size_v.y-21), "CAMINAR: WASD / FLECHAS    ·    INTERACTUAR: E   ·   MAPA: M", 13, Color("fff5df"), true)
 
 func draw_toast() -> void:
+	if mobile_layout:
+		if hud_expanded:
+			return
+		var fs := mobile_text_size()
+		var margin := fs * 0.55
+		var width := minf(size_v.x - margin * 2, fs * 24.0)
+		var y_top := fs * 2.75 + margin * 2
+		var lines := wrap_lines(toast, BOLD, fs, width - margin * 2)
+		panel(Rect2(margin, y_top, width, margin * 2 + lines.size() * fs * 1.25))
+		for i in range(lines.size()):
+			text(Vector2(margin * 2, y_top + margin + fs * (1.0 + i * 1.25)), lines[i], fs, Color("fff4d7"), true)
+		return
 	var y := minf(world_rect.end.y - 68, size_v.y - 95) if not portrait else size_v.y * 0.72
 	var w := 690.0 if not portrait else 1100.0
 	panel(Rect2((size_v.x-w)/2,y,w,44 if not portrait else 65), Color(0.12,0.24,0.19,0.94))
 	text(Vector2((size_v.x-w)/2+12,y+(29 if not portrait else 43)), toast, 16 if not portrait else 24, Color("fff4d7"), true, w-24, HORIZONTAL_ALIGNMENT_CENTER)
 
 func draw_dialog() -> void:
+	if mobile_layout:
+		draw_mobile_dialog()
+		return
 	draw_rect(Rect2(Vector2.ZERO,size_v), Color(0.05,0.11,0.09,0.42), true)
-	var w := 890.0 if not portrait else 1120.0
-	var h := 196.0 if not portrait else (560.0 if choosing else 400.0)
+	var w := 890.0
+	var h := 196.0
 	var x := (size_v.x-w)/2
-	var y := size_v.y-h-45 if not portrait else maxf(20, size_v.y-h-105)
+	var y := size_v.y-h-45
 	var r := Rect2(x,y,w,h)
 	panel(r, Color("f8edce"), Color("243d33"))
 	text(Vector2(x+25,y+37), dialogue_speaker, 18 if not portrait else 34, Color("b65c3e"), true)
@@ -649,6 +697,31 @@ func draw_dialog() -> void:
 	else:
 		text(Vector2(x+25,y+h-22), "E / ESPACIO  ·  CONTINUAR", 14 if not portrait else 29, Color("6b7d69"), true)
 		clickables.append({"rect":r,"id":"dialog"})
+
+func draw_mobile_dialog() -> void:
+	var fs := mobile_text_size()
+	var margin := fs * 0.55
+	var width := minf(size_v.x - margin * 2.0, fs * 25.0)
+	var x := (size_v.x - width) * 0.5
+	var content_width := width - margin * 2
+	var line_height := fs * 1.3
+	var lines := wrap_lines(dialogue_text, BODY, fs, content_width)
+	var button_h := fs * 2.65
+	var stacked := portrait and choosing
+	var button_rows := 2 if stacked else 1
+	var button_y := margin * 3 + line_height * (lines.size() + 1)
+	panel(Rect2(x, margin, width, button_y - margin + button_rows * (button_h + margin)), Color("f8edce"), Color("243d33"))
+	text(Vector2(x + margin, margin * 2 + fs), dialogue_speaker, fs, Color("a14b33"), true)
+	for i in range(lines.size()):
+		text(Vector2(x + margin, margin * 2 + fs + line_height * (i + 1)), lines[i], fs, Color("273f35"))
+	if choosing:
+		var choice_width := content_width if stacked else (content_width - margin) * 0.5
+		var second_x := x + margin if stacked else x + margin * 2 + choice_width
+		var second_y := button_y + button_h + margin if stacked else button_y
+		button(Rect2(x + margin, button_y, choice_width, button_h), "Cuidar a las personas", "choice0", true, fs)
+		button(Rect2(second_x, second_y, choice_width, button_h), "Reunir recursos", "choice1", false, fs)
+	else:
+		button(Rect2(x + margin, button_y, content_width, button_h), "Continuar", "dialog", true, fs)
 
 func draw_pause() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size_v), Color(0.04,0.10,0.08,0.75), true)
@@ -779,6 +852,7 @@ func pointer_down(pos: Vector2, index: int) -> void:
 				"confirm_new": confirm_new = false; start_game(false)
 				"cancel_new": confirm_new = false
 				"licenses": LICENSES.open(self)
+				"hud_toggle": hud_expanded = not hud_expanded; queue_redraw()
 				"pause": paused = true; s.save_game()
 				"unpause": paused = false
 				"title": paused = false; screen = "title"; s.save_game()
