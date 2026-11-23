@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "checks": [
+    {
+      "kind": "script",
+      "path": "res://test/camp_test.gd",
+      "expect": "[acampada-tests] PASS:",
+      "profile": "source"
+    }
+  ]
+}

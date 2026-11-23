@@ -1,0 +1,969 @@
+{
+  "assets": {
+    "assets/acampada/alba.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:48a6ab646922dd8b133e70c3c4077c6ec6d89d94932999e437e8cbe3d519d302",
+      "shipped": true,
+      "size": 53444,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/characters.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:bf0cd325248fe53299a8edfe1dce975f43f61991371e369b9fade16361018cd9",
+      "shipped": true,
+      "size": 2518630,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/acampada/cover.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/main.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:08e51176d35b96bcde380265de9ad72e18d36c4a824ba1dfe22266d693d022c4",
+      "shipped": true,
+      "size": 2440333,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/main.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/favicon.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "game-sharing.json",
+        "project.godot"
+      ],
+      "regions": [],
+      "sha256": "sha256:7d571643281f534a60e7e4a84e34d009d4b745cde4d9c94ce67f81a3d29a78e1",
+      "shipped": true,
+      "size": 5042,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "game-sharing.json",
+        "project.godot"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/joan.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:3a31257cca59979a91ce860e4c436a38e2967e7eb82500c3c053ed1e019cc446",
+      "shipped": true,
+      "size": 50149,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/mar.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:4656eb74721ea50aca76bd62f18084dc65f7e01cea9b34b8c2fd14b6743e6299",
+      "shipped": true,
+      "size": 55520,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/og.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "game-sharing.json"
+      ],
+      "regions": [],
+      "sha256": "sha256:886a19c526bc6d59ac7e610c11d6332eac6ff4c8baea48f125a6486f1d302944",
+      "shipped": true,
+      "size": 1454373,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "game-sharing.json"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/pegs.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:8493b61a20faa62a578075329e9822f593228081d35d74ac9e862f74189f2098",
+      "shipped": true,
+      "size": 82866,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/player.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:b1bbc5e3782d94301b10eb9e73530b39fb562dd4e4243d0b9b039d4bb104cc0f",
+      "shipped": true,
+      "size": 48891,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/plaza.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:c51e83461734cc2ba419bc7a6fe70a7eace3e5f37b67485692b8f434573f0ee8",
+      "shipped": true,
+      "size": 2995924,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/poles.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:faf52b27b56dd5098e501f586f41683d3fe265c7efe07c61fedb1ed269ac34e7",
+      "shipped": true,
+      "size": 64877,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/props.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:12c3ac5e5ac2fe39bbbeb6af89b930ed3035cfb24c312b5d93127cdb7e7023db",
+      "shipped": true,
+      "size": 2823952,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/acampada/table.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:69f1e3785e0ecaae53fa7c040dff9ff54701354cb6a27b2d6132215d4c793a02",
+      "shipped": true,
+      "size": 69816,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/tarp.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:c7d4b521db3d684ea1d099e68bcdc8c341142feed6c1efbaddba5b1e02a1f509",
+      "shipped": true,
+      "size": 59177,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/tent.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:cdc31a66c427c88c2f87b9a67db418158a29b6696c6f11cf139c755598a46ce1",
+      "shipped": true,
+      "size": 277974,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/tent_laid.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:587086310aa60fbdad29369af67c8cb2ec011833e63c44d6ec381ffd76931134",
+      "shipped": true,
+      "size": 281204,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/tent_poles.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:515d1e7392f88d01b55f800e852ee4f872e793c80ebc94a38cfe99d713dbc713",
+      "shipped": true,
+      "size": 264677,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/acampada/tent_raised.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "unknown",
+      "referenceEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "regions": [],
+      "sha256": "sha256:1d81d358e00271f2d22faf240b22ece0e34edffad46f98f472ee376ff7affe37",
+      "shipped": true,
+      "size": 298772,
+      "source": {},
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "scripts/camp/world.gd"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/template/characters/runner.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:c88485773d6ff9361e036f37d8ac76fb77b8c3f7c041c3f52c8dd222adc8cc21",
+      "shipped": true,
+      "size": 68885,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/characters/sentinel.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:0d9fb751bca5507ba14f7090573e6605a94753390a9e7c53bf2f590f0a24918d",
+      "shipped": true,
+      "size": 64998,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/environment/backdrop.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:ec4ab7867e60fb483dd438459f587b478aac4c1e71ec4fe509ce74a18de34216",
+      "shipped": true,
+      "size": 971282,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/environment/foreground.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:4b6916024c69961fbfa7cdc929c68f547fea4561e61ebdb3405b3aba0efbd94d",
+      "shipped": true,
+      "size": 58603,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/fonts/Figtree-VF.subset.woff2": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [
+        "assets/template/fonts/ui_bold.tres",
+        "assets/template/fonts/ui_medium.tres",
+        "assets/template/fonts/ui_regular.tres"
+      ],
+      "regions": [],
+      "sha256": "sha256:b3976c5969c8b1afd81dc3e314b61d8ffe3f3f58cf40906443105d330e6e0bdf",
+      "shipped": true,
+      "size": 23660,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "assets/template/fonts/ui_bold.tres",
+        "assets/template/fonts/ui_medium.tres",
+        "assets/template/fonts/ui_regular.tres"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/template/fonts/NotoSansSC-VF.subset.woff2": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {
+        "id": "OFL-1.1",
+        "url": "https://openfontlicense.org/open-font-license-official-text/"
+      },
+      "origin": "template",
+      "referenceEvidence": [
+        "assets/template/fonts/noto_sans_sc_bold.tres",
+        "assets/template/fonts/noto_sans_sc_medium.tres",
+        "assets/template/fonts/noto_sans_sc_regular.tres"
+      ],
+      "regions": [],
+      "sha256": "sha256:38f4c5f927f746b3dfa4c3a5d7edf0b7a3e828e27438418fa54f9e1565289412",
+      "shipped": true,
+      "size": 1869368,
+      "source": {
+        "name": "NotoSansSC-VF.subset.woff2",
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "assets/template/fonts/noto_sans_sc_bold.tres",
+        "assets/template/fonts/noto_sans_sc_medium.tres",
+        "assets/template/fonts/noto_sans_sc_regular.tres"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/template/fonts/display/Sora-VF.subset.woff2": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [
+        "assets/template/fonts/display/generic_title.tres"
+      ],
+      "regions": [],
+      "sha256": "sha256:438fbf4582548e76b266a738f2c11bcbd5137978f2d2e2f3aaabd49df69186f2",
+      "shipped": true,
+      "size": 41696,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [
+        "assets/template/fonts/display/generic_title.tres"
+      ],
+      "used": true,
+      "usedBy": []
+    },
+    "assets/template/powerups/energy.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:ffd7906f240f928e785d7c19a9e7a7b5dfab0d7483be5205dda3e4ba17ebe06a",
+      "shipped": true,
+      "size": 50950,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/powerups/magnet.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:6e7354aa6510a462717218b09b9d784bb161b87878bff62ef4f2a9d03c053de7",
+      "shipped": true,
+      "size": 53724,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/powerups/overdrive.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:6a48a85886c0551c1af0df576b0225f0ec3ae86b326fd84fc614083fbfe2908b",
+      "shipped": true,
+      "size": 37238,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/powerups/shield.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:8cebf0cf730ca35c8c8697192ef78121c926442328a0725e0bd3e31701d64f13",
+      "shipped": true,
+      "size": 39659,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/powerups/slow_field.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:96874c000866b2e7503b40da73888afb918ae36e462f51488415157da52a8637",
+      "shipped": true,
+      "size": 49145,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/ui/loading-background.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:16dde3061f4e60802f8f0d1a6b875e72b6add05192237b03fef1fd313968a13a",
+      "shipped": true,
+      "size": 473356,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/ui/pause_glass.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:c88a4725838df85e72c7270865848f275b62c525c5679a2a8b7ecefb1af82d4b",
+      "shipped": true,
+      "size": 115691,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    },
+    "assets/template/ui/title_glass.png": {
+      "declaredUseEvidence": [],
+      "generator": {},
+      "inputs": [],
+      "license": {},
+      "origin": "template",
+      "referenceEvidence": [],
+      "regions": [],
+      "sha256": "sha256:8860db07768f093d4effea10b51431f76a1552d4bc7fd4e57757f189c51f0429",
+      "shipped": true,
+      "size": 155592,
+      "source": {
+        "starterId": "game-generic-v56"
+      },
+      "status": "present",
+      "transformations": [],
+      "useEvidence": [],
+      "used": false,
+      "usedBy": []
+    }
+  },
+  "discoveries": {},
+  "downloads": {},
+  "export": {
+    "coverage": "verified",
+    "hostMedia": [
+      {
+        "contentMatches": [],
+        "path": "index.apple-touch-icon.png",
+        "sha256": "sha256:a465e18abc0cdc17c4dd59670ee365af4ba04cd0bcf0bb900054d1e48a83fdcc",
+        "size": 35318,
+        "sourcePaths": []
+      },
+      {
+        "contentMatches": [],
+        "path": "index.icon.png",
+        "sha256": "sha256:a7c0d8c9b25161fa8cea213a3f757cb2a2677979a64963b8f4e64af7769a7edc",
+        "size": 5968,
+        "sourcePaths": []
+      },
+      {
+        "contentMatches": [],
+        "path": "index.png",
+        "sha256": "sha256:3cb4495c0b98dfbe4b663cbf2b6836473572339beb66d902367893162a70be0e",
+        "size": 21443,
+        "sourcePaths": []
+      },
+      {
+        "contentMatches": [],
+        "path": "share/7d571643281f534a60e7e4a84e34d009d4b745cde4d9c94ce67f81a3d29a78e1.png",
+        "sha256": "sha256:7d571643281f534a60e7e4a84e34d009d4b745cde4d9c94ce67f81a3d29a78e1",
+        "size": 5042,
+        "sourcePaths": [
+          "assets/acampada/favicon.png"
+        ]
+      },
+      {
+        "contentMatches": [],
+        "path": "share/886a19c526bc6d59ac7e610c11d6332eac6ff4c8baea48f125a6486f1d302944.png",
+        "sha256": "sha256:886a19c526bc6d59ac7e610c11d6332eac6ff4c8baea48f125a6486f1d302944",
+        "size": 1454373,
+        "sourcePaths": [
+          "assets/acampada/og.png"
+        ]
+      }
+    ],
+    "pckSha256": "sha256:b9e9b97858febb2c7744fdc378b3d8fd55e5a230974edd082ec9b2039097af77",
+    "profile": "release",
+    "sourceFingerprint": "sha256:d384c15873263b5116626cc1008fc5900ba66f24c1f62d53fd02ddd10e607d2e"
+  },
+  "procedures": {},
+  "summary": {
+    "ancestry": {
+      "ai": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      },
+      "catalog": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      },
+      "procedural": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      }
+    },
+    "derivatives": {
+      "retained": 0,
+      "shipped": 0,
+      "used": 0
+    },
+    "exportedHostMedia": {
+      "paths": 5,
+      "uniqueHashes": 5,
+      "unmatchedSourcePaths": 3
+    },
+    "files": {
+      "downloaded": 0,
+      "retained": 33,
+      "shipped": 33,
+      "used": 19
+    },
+    "origins": {
+      "ai": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      },
+      "catalog": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      },
+      "derivative": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      },
+      "external": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      },
+      "procedural": {
+        "retained": 0,
+        "shipped": 0,
+        "used": 0
+      },
+      "template": {
+        "retained": 15,
+        "shipped": 15,
+        "used": 3
+      },
+      "unknown": {
+        "retained": 18,
+        "shipped": 18,
+        "used": 16
+      }
+    },
+    "packs": {
+      "discovered": 0,
+      "downloaded": 0,
+      "shipped": 0,
+      "used": 0
+    },
+    "proceduralSystems": {
+      "retained": 0,
+      "used": 0
+    },
+    "spriteRegions": {
+      "retained": 0,
+      "shipped": 0,
+      "used": 0
+    },
+    "visualCoverage": {
+      "approvedRevision": 3,
+      "blueprintId": "gbp_ad1e37fe30be19e2cb963f8a",
+      "committedRoles": 6,
+      "expectedDigest": "45c485117e1b7db928b45934195def723f04d6d3e1b7c6e8046e634cd65608cd",
+      "fulfilledRoles": 0,
+      "roles": [
+        {
+          "id": "plaza_cenital",
+          "reasons": [
+            "unresolved"
+          ],
+          "status": "unresolved"
+        },
+        {
+          "id": "personajes_animados",
+          "reasons": [
+            "unresolved"
+          ],
+          "status": "unresolved"
+        },
+        {
+          "id": "tienda_por_fases",
+          "reasons": [
+            "unresolved"
+          ],
+          "status": "unresolved"
+        },
+        {
+          "id": "materiales_interactivos",
+          "reasons": [
+            "unresolved"
+          ],
+          "status": "unresolved"
+        },
+        {
+          "id": "asamblea_organizacion",
+          "reasons": [
+            "unresolved"
+          ],
+          "status": "unresolved"
+        },
+        {
+          "id": "llegada_alojamiento",
+          "reasons": [
+            "unresolved"
+          ],
+          "status": "unresolved"
+        }
+      ],
+      "search": {
+        "checkedPages": 0,
+        "outcomes": 0,
+        "overflowEvents": 0,
+        "requests": 0
+      },
+      "selectedButUnusedAssets": [],
+      "staleRenderedEvidence": [],
+      "status": "incomplete",
+      "unexplainedFallbacks": [],
+      "unresolvedRoles": [
+        "plaza_cenital",
+        "personajes_animados",
+        "tienda_por_fases",
+        "materiales_interactivos",
+        "asamblea_organizacion",
+        "llegada_alojamiento"
+      ],
+      "visualQuality": "requires_agent_review"
+    }
+  },
+  "version": 1,
+  "visualCoverage": {
+    "attempts": {},
+    "expected": {
+      "approvedRevision": 3,
+      "blueprintId": "gbp_ad1e37fe30be19e2cb963f8a",
+      "digest": "45c485117e1b7db928b45934195def723f04d6d3e1b7c6e8046e634cd65608cd",
+      "roles": [
+        {
+          "description": "Un escenario urbano modular en pixel art de 16 bits que recree tu plaza según el croquis aportado, desde el estado casi vacío del inicio hasta los cambios físicos del Día 1.",
+          "id": "plaza_cenital",
+          "label": "Tu Plaça de l'Ajuntament cenital"
+        },
+        {
+          "description": "Personajes cenitales distinguibles y animados para que puedas explorar, conversar, reunirte y ver llegar caminando a residentes con rutinas y colaboración.",
+          "id": "personajes_animados",
+          "label": "Tu jugador, Alba, Joan, Mar y residentes"
+        },
+        {
+          "description": "Estados visuales coherentes de lona, varillas, estructura levantada, asegurado y tienda terminada para que cada acción transforme físicamente tu escenario.",
+          "id": "tienda_por_fases",
+          "label": "Tu tienda y sus fases de montaje"
+        },
+        {
+          "description": "Lona, varillas, sujeciones y otros recursos imprescindibles del montaje, visibles en el suelo y durante su recogida y uso, sin gráficos genéricos improvisados.",
+          "id": "materiales_interactivos",
+          "label": "Tus materiales recogibles y manipulables"
+        },
+        {
+          "description": "Mobiliario, disposición y señales visuales diegéticas para que puedas reconocer la reunión y la constitución provisional de Organización en su ubicación correcta, sin adelantar otras comisiones.",
+          "id": "asamblea_organizacion",
+          "label": "Tu primera asamblea y Organización provisional"
+        },
+        {
+          "description": "Lectura visual de la entrada caminando, la colaboración y la ocupación de la tienda para comunicar que el alojamiento permite crecer la población.",
+          "id": "llegada_alojamiento",
+          "label": "Tu llegada de residentes y alojamiento"
+        }
+      ]
+    },
+    "overflowEvents": 0,
+    "resolutions": {},
+    "version": 1
+  }
+}

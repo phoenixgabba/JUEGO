@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 2,
+  "publicationOrigin": "https://acampada-aefnqt8k.manus.game",
+  "title": "ACAMPADA VALÈNCIA",
+  "description": "Un primer día para construir comunidad en la Plaça de l'Ajuntament.",
+  "defaultCaptions": {
+    "x": "ACAMPADA VALÈNCIA: construyamos comunidad desde la plaza.",
+    "facebook": "ACAMPADA VALÈNCIA: un primer día para construir comunidad.",
+    "reddit": "ACAMPADA VALÈNCIA — una aventura sobre construir comunidad.",
+    "discord": "Ven a la plaza en ACAMPADA VALÈNCIA."
+  },
+  "assets": {
+    "og": {
+      "digest": "sha256:886a19c526bc6d59ac7e610c11d6332eac6ff4c8baea48f125a6486f1d302944",
+      "path": "share/886a19c526bc6d59ac7e610c11d6332eac6ff4c8baea48f125a6486f1d302944.png",
+      "mime": "image/png",
+      "width": 1280,
+      "height": 720,
+      "sizeBytes": 1454373,
+      "sourcePath": "assets/acampada/og.png"
+    },
+    "favicon": {
+      "digest": "sha256:7d571643281f534a60e7e4a84e34d009d4b745cde4d9c94ce67f81a3d29a78e1",
+      "path": "share/7d571643281f534a60e7e4a84e34d009d4b745cde4d9c94ce67f81a3d29a78e1.png",
+      "mime": "image/png",
+      "width": 64,
+      "height": 64,
+      "sizeBytes": 5042,
+      "sourcePath": "assets/acampada/favicon.png"
+    }
+  }
+}
