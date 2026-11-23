@@ -30,7 +30,10 @@ var mini_lift := 0.0
 var mini_pegs := [false, false, false, false]
 var mini_selected := 0
 var dragging := false
-var touch_directions := {}
+var joystick_pointer := -2
+var joystick_center := Vector2.ZERO
+var joystick_radius := 1.0
+var joystick_vector := Vector2.ZERO
 var elapsed := 0.0
 var evening_shade := 0.0
 var save_timer := 0.0
@@ -63,6 +66,8 @@ func _process(delta: float) -> void:
 	elapsed += delta
 	evening_shade = move_toward(evening_shade, s.light_level(), delta * 0.16)
 	if toast_time > 0: toast_time -= delta
+	if paused or dialogue or mini or map_open or commission_open or screen != "play":
+		reset_joystick()
 	if screen != "play" or paused or map_open:
 		queue_redraw()
 		return
@@ -99,8 +104,7 @@ func _process(delta: float) -> void:
 
 func movement() -> Vector2:
 	var d := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	for key in touch_directions:
-		d += touch_directions[key]
+	d += joystick_vector
 	return d.normalized() if d.length() > 1.0 else d
 
 func walkable(p: Vector2) -> bool:
@@ -529,7 +533,7 @@ func draw_title() -> void:
 	button(Rect2(x+32,y+300,w-64,54), "CONTINUAR PARTIDA" if has_save else "EMPEZAR EL DÍA 1", "continue" if has_save else "start", true)
 	if has_save: button(Rect2(x+32,y+366,w-64,45), "NUEVA PARTIDA", "new")
 	text(Vector2(x+34,y+448), "WASD / flechas para caminar   ·   E para interactuar", 16, Color("d4e0cb"))
-	text(Vector2(x+34,y+476), "En móvil: cruceta y botón de acción", 16, Color("d4e0cb"))
+	text(Vector2(x+34,y+476), "En móvil: joystick y botón de acción", 16, Color("d4e0cb"))
 	text(Vector2(x+34,y+503), "Licencias de código abierto", 14, Color("eecb89"))
 	clickables.append({"rect":Rect2(x+30,y+482,240,32),"id":"licenses"})
 	if confirm_new:
@@ -579,15 +583,10 @@ func mobile_text_size() -> int:
 func draw_mobile_hud() -> void:
 	var fs := mobile_text_size()
 	var margin := fs * 0.55
-	var h := fs * 2.75
 	var width := minf(size_v.x - margin * 2, fs * 24.0)
-	var pause_width := fs * 3.5
-	var button_width := width - pause_width - margin
-	button(Rect2(margin, margin, button_width, h), "Ocultar información" if hud_expanded else "Ver objetivo y estado", "hud_toggle", false, fs)
-	button(Rect2(margin + button_width + margin, margin, pause_width, h), "Pausa", "pause", false, fs)
 	if not hud_expanded:
 		return
-	var y := h + margin * 2
+	var y := margin
 	var step := fs * 1.28
 	var content_width := width - margin * 2
 	var status := "Día 1 · %s · %02d:00   |   Vida %d · Energía %d · Respeto %d · Caja %d € · Recursos %d · Bienestar %d · Personas %d" % [
@@ -608,7 +607,7 @@ func draw_mobile_hud() -> void:
 
 func toggle_map() -> void:
 	map_open = not map_open
-	touch_directions.clear()
+	reset_joystick()
 	clickables.clear()
 	queue_redraw()
 
@@ -641,30 +640,60 @@ func draw_camp_map() -> void:
 		var label_pos := map_rect.end - Vector2(width,0) + Vector2(i % columns * column_width, 27 + floori(float(i) / columns) * 25)
 		text(label_pos,"%d  %s" % [i+1,item.label],16,color,true,column_width)
 
+func mobile_button_row() -> Rect2:
+	var fs := mobile_text_size()
+	var margin := fs * 0.55
+	var height := fs * 3.5
+	return Rect2(margin, size_v.y - margin - height, size_v.x - margin * 2, height)
+
 func draw_touch_controls() -> void:
-	var y := size_v.y - (210 if portrait else 105)
-	var x := 205.0 if portrait else 106.0
-	var step := 92.0 if portrait else 50.0
-	var radius := 50.0 if portrait else 29.0
-	var dirs := [{"v":Vector2.LEFT,"p":Vector2(x-step,y),"icon":"‹"}, {"v":Vector2.RIGHT,"p":Vector2(x+step,y),"icon":"›"}, {"v":Vector2.UP,"p":Vector2(x,y-step),"icon":"^"}, {"v":Vector2.DOWN,"p":Vector2(x,y+step),"icon":"v"}]
-	for d in dirs:
-		draw_circle(d.p, radius, Color(0.10,0.21,0.18,0.72))
-		draw_arc(d.p, radius, 0, TAU, 30, Color(0.98,0.89,0.69,0.65), 2)
-		text(d.p + Vector2(-radius, radius*0.38), d.icon, 42 if portrait else 28, Color("fff5dc"), true, radius*2, HORIZONTAL_ALIGNMENT_CENTER)
-		clickables.append({"rect":Rect2(d.p-Vector2(radius,radius),Vector2(radius*2,radius*2)),"id":"dir","dir":d.v})
-	var ap := Vector2(size_v.x-(135 if portrait else 78), y)
-	var ar := 75.0 if portrait else 47.0
-	draw_circle(ap, ar, Color("efbe6b"))
-	draw_arc(ap, ar, 0, TAU, 40, Color("fff2ce"), 3)
-	text(ap+Vector2(-ar,8), "ACCIÓN", 21 if portrait else 14, Color("263d32"), true, ar*2, HORIZONTAL_ALIGNMENT_CENTER)
-	clickables.append({"rect":Rect2(ap-Vector2(ar,ar),Vector2(ar*2,ar*2)),"id":"action"})
-	var map_radius := ar * 0.68
-	var map_pos := ap - Vector2(0, ar + map_radius + 13)
-	draw_circle(map_pos, map_radius, Color("36594b"))
-	draw_arc(map_pos, map_radius, 0, TAU, 36, Color("fff2ce"), 2)
-	text(map_pos + Vector2(-map_radius, 5), "MAPA", 18 if portrait else 12, Color("fff5df"), true, map_radius * 2, HORIZONTAL_ALIGNMENT_CENTER)
-	clickables.append({"rect":Rect2(map_pos - Vector2.ONE * map_radius,Vector2.ONE * map_radius * 2), "id":"map"})
-	if not portrait: text(Vector2(224,size_v.y-21), "CAMINAR: WASD / FLECHAS    ·    INTERACTUAR: E   ·   MAPA: M", 13, Color("fff5df"), true)
+	if not mobile_layout:
+		text(Vector2(24,size_v.y-21), "CAMINAR: WASD / FLECHAS    ·    INTERACTUAR: E   ·   MAPA: M", 13, Color("fff5df"), true)
+		return
+	var fs := mobile_text_size()
+	var row := mobile_button_row()
+	draw_mobile_controls(row, not dialogue)
+	if dialogue:
+		return
+	var gap := fs * 0.35
+	var pause_width := fs * 4.3
+	button(Rect2(row.position, Vector2(row.size.x - gap - pause_width, row.size.y)), "Ocultar información" if hud_expanded else "Ver objetivo y estado", "hud_toggle", false, fs)
+	button(Rect2(row.end.x - pause_width, row.position.y, pause_width, row.size.y), "Pausa", "pause", false, fs)
+
+func draw_mobile_controls(row: Rect2, enabled: bool) -> void:
+	var fs := mobile_text_size()
+	var gap := fs * 0.45
+	joystick_radius = fs * 2.55
+	var right_width := fs * 5.35
+	var top := row.position.y - gap - joystick_radius * 2
+	joystick_center = Vector2(row.position.x + joystick_radius, top + joystick_radius)
+	var base := Color(0.10,0.21,0.18,0.83 if enabled else 0.45)
+	draw_circle(joystick_center, joystick_radius, base)
+	draw_arc(joystick_center, joystick_radius, 0, TAU, 48, Color("eed29b"), 3)
+	draw_circle(joystick_center + joystick_vector * joystick_radius * 0.55, joystick_radius * 0.39, Color("d4bf91") if enabled else Color("968c72"))
+	if enabled:
+		clickables.append({"rect":Rect2(joystick_center - Vector2.ONE * joystick_radius, Vector2.ONE * joystick_radius * 2), "id":"joystick"})
+	var h := joystick_radius - gap * 0.5
+	var x := row.end.x - right_width
+	button(Rect2(x,top,right_width,h), "Mapa", "map", false, fs)
+	button(Rect2(x,top+h+gap,right_width,h), "Acción", "action", enabled, fs)
+	if not enabled:
+		draw_rect(Rect2(x,top,right_width,joystick_radius * 2), Color(0.05,0.11,0.09,0.45))
+		clickables.pop_back()
+		clickables.pop_back()
+
+func reset_joystick() -> void:
+	joystick_pointer = -2
+	joystick_vector = Vector2.ZERO
+
+func update_joystick(pos: Vector2) -> void:
+	var motion := (pos - joystick_center) / (joystick_radius * 0.65)
+	var strength := clampf((motion.length() - 0.15) / 0.85, 0.0, 1.0)
+	joystick_vector = motion.normalized() * strength
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		reset_joystick()
 
 func draw_toast() -> void:
 	if mobile_layout:
@@ -673,7 +702,7 @@ func draw_toast() -> void:
 		var fs := mobile_text_size()
 		var margin := fs * 0.55
 		var width := minf(size_v.x - margin * 2, fs * 24.0)
-		var y_top := fs * 2.75 + margin * 2
+		var y_top := margin
 		var lines := wrap_lines(toast, BOLD, fs, width - margin * 2)
 		panel(Rect2(margin, y_top, width, margin * 2 + lines.size() * fs * 1.25))
 		for i in range(lines.size()):
@@ -718,22 +747,19 @@ func draw_mobile_dialog() -> void:
 	var content_width := width - margin * 2
 	var line_height := fs * 1.3
 	var lines := wrap_lines(dialogue_text, BODY, fs, content_width)
-	var button_h := fs * 2.65
-	var stacked := portrait and choosing
-	var button_rows := 2 if stacked else 1
-	var button_y := margin * 3 + line_height * (lines.size() + 1)
-	panel(Rect2(x, margin, width, button_y - margin + button_rows * (button_h + margin)), Color("f8edce"), Color("243d33"))
+	panel(Rect2(x, margin, width, margin * 2 + line_height * (lines.size() + 1)), Color("f8edce"), Color("243d33"))
 	text(Vector2(x + margin, margin * 2 + fs), dialogue_speaker, fs, Color("a14b33"), true)
 	for i in range(lines.size()):
 		text(Vector2(x + margin, margin * 2 + fs + line_height * (i + 1)), lines[i], fs, Color("273f35"))
+	var row := mobile_button_row()
+	draw_touch_controls()
 	if choosing:
-		var choice_width := content_width if stacked else (content_width - margin) * 0.5
-		var second_x := x + margin if stacked else x + margin * 2 + choice_width
-		var second_y := button_y + button_h + margin if stacked else button_y
-		button(Rect2(x + margin, button_y, choice_width, button_h), "Cuidar a las personas", "choice0", true, fs)
-		button(Rect2(second_x, second_y, choice_width, button_h), "Reunir recursos", "choice1", false, fs)
+		var gap := fs * 0.35
+		var choice_width := (row.size.x - gap) * 0.5
+		button(Rect2(row.position, Vector2(choice_width, row.size.y)), "Cuidar a las personas", "choice0", true, roundi(fs * 0.83))
+		button(Rect2(row.position + Vector2(choice_width + gap, 0), Vector2(choice_width, row.size.y)), "Reunir recursos", "choice1", false, roundi(fs * 0.83))
 	else:
-		button(Rect2(x + margin, button_y, content_width, button_h), "Continuar", "dialog", true, fs)
+		button(row, "Continuar", "dialog", true, fs)
 
 func draw_pause() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size_v), Color(0.04,0.10,0.08,0.75), true)
@@ -894,15 +920,17 @@ func _input(event: InputEvent) -> void:
 			else: interact()
 			return
 	if event is InputEventScreenTouch:
-		if event.pressed: pointer_down(event.position, event.index)
+		if event.pressed and not event.canceled: pointer_down(event.position, event.index)
 		else: pointer_up(event.position, event.index)
 	elif event is InputEventScreenDrag:
-		if dragging and mini and s.build_stage == 0: mini_piece = tarp_drag_point(event.position)
+		if event.index == joystick_pointer: update_joystick(event.position)
+		elif dragging and mini and s.build_stage == 0: mini_piece = tarp_drag_point(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed: pointer_down(event.position, -1)
 		else: pointer_up(event.position, -1)
-	elif event is InputEventMouseMotion and dragging and mini and s.build_stage == 0:
-		mini_piece = tarp_drag_point(event.position)
+	elif event is InputEventMouseMotion:
+		if joystick_pointer == -1: update_joystick(event.position)
+		elif dragging and mini and s.build_stage == 0: mini_piece = tarp_drag_point(event.position)
 
 func pointer_down(pos: Vector2, index: int) -> void:
 	if mini and s.build_stage == 0 and pos.distance_to(mini_rect.position + tarp_panel_point(mini_piece) * mini_scale) < 75*mini_scale:
@@ -930,7 +958,10 @@ func pointer_down(pos: Vector2, index: int) -> void:
 				"dialog": close_dialog()
 				"choice0": choose_assembly(0)
 				"choice1": choose_assembly(1)
-				"dir": touch_directions[index] = entry.dir
+				"joystick":
+					if joystick_pointer == -2 and pos.distance_to(joystick_center) <= joystick_radius:
+						joystick_pointer = index
+						update_joystick(pos)
 				"action": interact()
 				"map": toggle_map()
 				"mini_action": mini_action()
@@ -942,7 +973,8 @@ func pointer_down(pos: Vector2, index: int) -> void:
 			return
 
 func pointer_up(_pos: Vector2, index: int) -> void:
-	touch_directions.erase(index)
+	if index == joystick_pointer:
+		reset_joystick()
 	if dragging:
 		dragging = false
 		if mini and s.build_stage == 0 and mini_piece.distance_to(Vector2(560,235)) < 65: complete_build_stage()

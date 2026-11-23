@@ -40,11 +40,19 @@ func run() -> void:
 	Input.action_release("move_up")
 	check(main.s.player.y < y_before, "movimiento por teclado")
 	var x_before: float = main.s.player.x
-	main.clickables = [{"rect":Rect2(0,0,100,100), "id":"dir", "dir":Vector2.RIGHT}]
+	main.joystick_center = Vector2(50,50)
+	main.joystick_radius = 50.0
+	main.clickables = [{"rect":Rect2(0,0,100,100), "id":"joystick"}]
 	main.pointer_down(Vector2(50,50), 0)
+	var joystick_drag := InputEventScreenDrag.new()
+	joystick_drag.index = 0
+	joystick_drag.position = Vector2(95,50)
+	main._input(joystick_drag)
 	main._process(0.2)
-	main.pointer_up(Vector2(50,50), 0)
-	check(main.s.player.x > x_before and main.touch_directions.is_empty(), "movimiento táctil y liberación")
+	main.pointer_up(Vector2(95,50), 1)
+	check(main.joystick_vector.x > 0.0, "otro dedo no suelta el joystick")
+	main.pointer_up(Vector2(95,50), 0)
+	check(main.s.player.x > x_before and main.joystick_vector.is_zero_approx(), "movimiento táctil y liberación")
 	for n in ["Patricia", "Alejandro", "Marina"]:
 		main.s.player = main.world.npc_pos(n, main.s, main.elapsed) + Vector2(0, 50)
 		main.interact()
