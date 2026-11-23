@@ -238,11 +238,11 @@ func key(code: int) -> void:
 
 func draw(game: Control) -> void:
 	var size := game.get_viewport_rect().size
-	var mobile_storage: bool = game.mobile_layout and mode == "storage"
-	var vertical_storage: bool = mobile_storage and game.portrait
-	var panel_size := Vector2(420, 755) if vertical_storage else Vector2(760, 520)
+	var vertical: bool = game.mobile_layout and game.portrait
+	var portrait_heights := {"storage": 755, "puzzle": 620, "catch": 714, "communication": 690, "organization": 570}
+	var panel_size := Vector2(420, portrait_heights.get(mode, 620)) if vertical else Vector2(760, 520)
 	var scale := minf((size.x - 24) / panel_size.x, (size.y - 24) / panel_size.y)
-	if not mobile_storage:
+	if not game.mobile_layout:
 		scale = minf(1.0, scale)
 	game.draw_rect(Rect2(Vector2.ZERO,size), Color(0.04,0.10,0.08,.79))
 	game.mini_scale = scale
@@ -250,18 +250,18 @@ func draw(game: Control) -> void:
 	game.draw_set_transform(game.mini_rect.position, 0, Vector2.ONE * scale)
 	game.drawing_mini = true
 	game.panel(Rect2(Vector2.ZERO, panel_size))
-	game.button(Rect2(panel_size.x - 62,12,46,42), "×", "commission_close")
+	game.button(Rect2(panel_size.x - 62,12,52,52), "×", "commission_close")
 	if failed:
 		game.text(Vector2(38,92), "Vuelve a intentarlo", 30)
 		game.text(Vector2(38,137), "Puedes reiniciar el minijuego.", 19)
-		btn(game, Rect2(38,185,225,52), "Reintentar", "retry")
+		btn(game, Rect2(38,185,225,60), "Reintentar", "retry")
 	else:
 		match mode:
-			"storage": draw_storage(game, vertical_storage)
-			"communication": draw_letters(game)
-			"puzzle": draw_puzzle(game)
-			"catch": draw_catch(game)
-			"organization": draw_agenda(game)
+			"storage": draw_storage(game, vertical)
+			"communication": draw_letters(game, vertical)
+			"puzzle": draw_puzzle(game, vertical)
+			"catch": draw_catch(game, vertical)
+			"organization": draw_agenda(game, vertical)
 	game.drawing_mini = false
 	game.draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 
@@ -295,50 +295,65 @@ func draw_storage(game: Control, vertical: bool) -> void:
 	btn(game,Rect2(346,258,334,50),"Bajar · ↓","down")
 	btn(game,Rect2(346,326,334,50),"Soltar · Espacio","drop")
 
-func draw_letters(game: Control) -> void:
-	game.text(Vector2(30,47), "Comunicación · El titular", 28)
-	game.text(Vector2(30,88), "Descubre el acuerdo de la asamblea. Fallos: %d/7" % errors, 18)
+func draw_letters(game: Control, vertical: bool) -> void:
+	game.text(Vector2(30,47), "El titular" if vertical else "Comunicación · El titular", 28)
+	game.paragraph(Vector2(30,88), "Descubre el acuerdo de la asamblea. Fallos: %d/7" % errors, 360 if vertical else 680, 22 if vertical else 18)
 	var shown := ""
 	for letter in masked_title():
 		shown += letter + " "
-	game.text(Vector2(34,163), shown, 26)
+	if vertical:
+		game.paragraph(Vector2(30,163), shown, 360, 25)
+	else:
+		game.text(Vector2(34,163), shown, 26)
 	for i in range(26):
 		var letter := String.chr(KEY_A+i)
-		var r := Rect2(33+(i%9)*77,204+floori(i/9.0)*62,68,52)
+		var r := Rect2(18+(i%6)*65,225+floori(i/6.0)*65,60,60) if vertical else Rect2(33+(i%9)*77,204+floori(i/9.0)*62,68,52)
 		if letter in guesses:
 			game.draw_rect(r, Color("46574c"))
 			game.text(r.position+Vector2(23,34),letter,18,Color("b1b8aa"))
 		else:
 			btn(game,r,letter,letter)
 	var support := [Vector2(66,485), Vector2(66,397), Vector2(151,397), Vector2(151,417)]
+	var support_offset := Vector2(0, 185) if vertical else Vector2.ZERO
+	for i in range(support.size()):
+		support[i] += support_offset
 	for i in range(mini(errors,3)):
 		game.draw_line(support[i],support[i+1],Color("f7dfaf"),3)
-	if errors >= 4: game.draw_arc(Vector2(151,427),10,0,TAU,16,Color("f7dfaf"),3)
-	if errors >= 5: game.draw_line(Vector2(151,437),Vector2(151,462),Color("f7dfaf"),3)
+	if errors >= 4: game.draw_arc(Vector2(151,427) + support_offset,10,0,TAU,16,Color("f7dfaf"),3)
+	if errors >= 5: game.draw_line(Vector2(151,437) + support_offset,Vector2(151,462) + support_offset,Color("f7dfaf"),3)
 	if errors >= 6:
-		game.draw_line(Vector2(151,445),Vector2(133,453),Color("f7dfaf"),3)
-		game.draw_line(Vector2(151,445),Vector2(169,453),Color("f7dfaf"),3)
+		game.draw_line(Vector2(151,445) + support_offset,Vector2(133,453) + support_offset,Color("f7dfaf"),3)
+		game.draw_line(Vector2(151,445) + support_offset,Vector2(169,453) + support_offset,Color("f7dfaf"),3)
 
-func draw_puzzle(game: Control) -> void:
-	game.text(Vector2(30,47), "Cocina · Monta la mesa", 28)
-	game.text(Vector2(30,84), "Toca dos piezas para intercambiarlas y completar la mesa.", 18)
+func draw_puzzle(game: Control, vertical: bool) -> void:
+	game.text(Vector2(24,47), "Monta la mesa" if vertical else "Cocina · Monta la mesa", 28)
+	game.paragraph(Vector2(24,88), "Toca dos piezas para intercambiarlas y completar la mesa.", 372 if vertical else 700, 23 if vertical else 18)
 	var table: Texture2D = preload("res://assets/acampada/table.png")
+	var tile_size := Vector2(table.get_size()) / Vector2(3, 2)
 	for i in range(6):
 		var p: int = puzzle[i]
-		var r := Rect2(134+(i%3)*162,112+floori(i/3.0)*157,151,143)
+		var r := Rect2(18+(i%3)*130,164+floori(i/3.0)*203,124,187) if vertical else Rect2(134+(i%3)*162,112+floori(i/3.0)*157,151,143)
 		game.draw_rect(r, Color("6a7860"))
-		game.draw_texture_rect_region(table,r,Rect2((p%3)*85,floori(p/3.0)*128,85,128))
+		game.draw_texture_rect_region(table,r,Rect2(Vector2(p % 3, floori(p / 3.0)) * tile_size, tile_size))
 		game.draw_rect(r,Color("f3d691") if picked == i else Color("ab9a72"),false,3)
 		game.clickables.append({"rect":game.mini_hit(r),"id":"activity:" + str(i)})
 
-func draw_catch(game: Control) -> void:
+func draw_catch(game: Control, vertical: bool) -> void:
 	game.text(Vector2(30,47), "Cocina · Alimentos %d/%d" % [food,FOOD_GOAL], 28)
-	game.text(Vector2(30,81), "Recoge comida y esquiva herramientas. Golpes: %d/3" % strikes, 18)
+	game.paragraph(Vector2(30,88 if vertical else 81), "Recoge comida y esquiva herramientas. Golpes: %d/3" % strikes, 360 if vertical else 700, 22 if vertical else 18)
+	var lane_width := 77 if vertical else 137
+	var lane_x := 18 if vertical else 40
+	var lane_y := 156 if vertical else 104
+	var lane_h := 460 if vertical else 313
+	var lane_center := lane_x + (lane_width - 8) * 0.5
 	for i in range(5):
-		game.draw_rect(Rect2(40+i*137,104,126,313), Color("3a5346"))
-		btn(game,Rect2(40+i*137,450,126,44),str(i+1),str(i))
+		var lane := Rect2(lane_x + i * lane_width, lane_y, lane_width - 8, lane_h)
+		game.draw_rect(lane, Color("3a5346"))
+		btn(game,Rect2(lane.position.x, lane.end.y + (18 if vertical else 33), lane.size.x, 60 if vertical else 44),str(i+1),str(i))
+		if vertical:
+			game.clickables.append({"rect":game.mini_hit(lane), "id":"activity:" + str(i)})
 	for item in falling:
-		var p := Vector2(104+item.lane*137,124+item.y*263)
+		var p := Vector2(lane_center + item.lane * lane_width, lane_y + 20 + item.y * (lane_h - 50))
 		match int(item.icon):
 			0:
 				game.draw_rect(Rect2(p-Vector2(18,9),Vector2(36,17)), Color("be8045"))
@@ -354,10 +369,10 @@ func draw_catch(game: Control) -> void:
 				game.draw_circle(p+Vector2(0,-4),13,Color("699f4a"))
 				game.draw_rect(Rect2(p+Vector2(-3,4),Vector2(7,12)),Color("abd075"))
 		game.text(p+Vector2(-53,30),["Pan","Fruta","Llave","Verdura"][item.icon],15,Color("fff1cf"),true,106,HORIZONTAL_ALIGNMENT_CENTER)
-	game.draw_rect(Rect2(76+player_lane*137,394,57,17),Color("f2c97a"))
+	game.draw_rect(Rect2(lane_center + player_lane * lane_width - 28.5, lane_y + lane_h - 23, 57, 17),Color("f2c97a"))
 
-func draw_agenda(game: Control) -> void:
-	game.text(Vector2(30,47), "Organización · Orden del día", 28)
+func draw_agenda(game: Control, vertical: bool) -> void:
+	game.text(Vector2(30,47), "Orden del día" if vertical else "Organización · Orden del día", 28)
 	game.text(Vector2(30,85), "Ronda %d/%d" % [mini(score + 1, AGENDA_ROUNDS), AGENDA_ROUNDS], 19)
 	var active := -1
 	var instruction := "Reproduce el orden con las tarjetas o las teclas 1–4."
@@ -367,14 +382,14 @@ func draw_agenda(game: Control) -> void:
 		instruction = "Fíjate en el orden en que se iluminan los temas."
 		if fmod(clock, AGENDA_BEAT) < .62:
 			active = agenda[mini(floori(clock / AGENDA_BEAT), agenda.size() - 1)]
-	game.text(Vector2(30,131), instruction, 20)
+	game.paragraph(Vector2(30,131), instruction, 360 if vertical else 700, 23 if vertical else 20)
 	for i in range(agenda.size()):
-		game.draw_circle(Vector2(310 + i * 34,187), 9, COLORS[i % COLORS.size()] if i < agenda_position else Color("52665a"))
+		game.draw_circle(Vector2((145 if vertical else 310) + i * 34, 210 if vertical else 187), 9, COLORS[i % COLORS.size()] if i < agenda_position else Color("52665a"))
 	for i in range(AGENDA_TOPICS.size()):
-		var r := Rect2(95 + (i % 2) * 293, 231 + floori(i / 2.0) * 111, 277, 87)
+		var r := Rect2(20 + (i % 2) * 194, 254 + floori(i / 2.0) * 136, 186, 112) if vertical else Rect2(95 + (i % 2) * 293, 231 + floori(i / 2.0) * 111, 277, 87)
 		var label := "%d · %s" % [i + 1, AGENDA_TOPICS[i]]
 		if agenda_preview or agenda_retry:
 			game.draw_rect(r, COLORS[i] if active == i else Color("3f5649"))
-			game.text(r.position + Vector2(0,52), label, 22, Color("fff4d7"), true, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+			game.text(r.position + Vector2(0, r.size.y * 0.63), label, 22, Color("fff4d7"), true, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 		else:
 			btn(game, r, label, str(i))

@@ -758,11 +758,22 @@ func draw_result() -> void:
 
 func draw_minigame() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size_v), Color(0.04,0.10,0.08,0.75), true)
-	mini_scale = minf(1.4 if portrait else 1.0, minf((size_v.x - 20.0) / 820.0, (size_v.y - 20.0) / 500.0))
-	var y := (size_v.y - 500.0 * mini_scale) / 2.0
-	mini_rect = Rect2((size_v.x-820*mini_scale)/2,y,820*mini_scale,500*mini_scale)
+	var vertical := mobile_layout and portrait
+	var panel_size := Vector2(440, 690) if vertical else Vector2(820, 500)
+	mini_scale = minf((size_v.x - 24) / panel_size.x, (size_v.y - 24) / panel_size.y)
+	if not mobile_layout:
+		mini_scale = minf(1.0, mini_scale)
+	mini_rect = Rect2((size_v - panel_size * mini_scale) * 0.5, panel_size * mini_scale)
 	draw_set_transform(mini_rect.position, 0.0, Vector2.ONE * mini_scale)
 	drawing_mini = true
+	if vertical:
+		draw_portrait_tent()
+	else:
+		draw_landscape_tent()
+	drawing_mini = false
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+func draw_landscape_tent() -> void:
 	var p := Vector2.ZERO
 	panel(Rect2(0,0,820,500), Color("f8edce"), Color("29453a"))
 	var names := ["1. EXTIENDE LA LONA", "2. ENSAMBLA LAS VARILLAS", "3. LEVANTA LA ESTRUCTURA", "4. ASEGURA LAS PIQUETAS"]
@@ -803,8 +814,55 @@ func draw_minigame() -> void:
 		button(Rect2(p+Vector2(290,406),Vector2(240,50)), "ASEGURAR · E", "mini_action", true)
 	if toast_time > 0: text(p+Vector2(28,390), toast, 15, Color("a05739"), true)
 	text(p+Vector2(28,478), "ESC: CERRAR Y CONTINUAR DESPUÉS", 13, Color("657b69"), true)
-	drawing_mini = false
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+func draw_portrait_tent() -> void:
+	var ink := Color("29453a")
+	panel(Rect2(0,0,440,690), Color("f8edce"), ink)
+	var headings := ["Extiende la lona", "Ensambla las varillas", "Levanta la tienda", "Asegura las piquetas"]
+	var instructions := ["Arrastra la lona al círculo.", "Pulsa cuando el indicador esté en verde.", "Pulsa rápido varias veces. La barra baja si paras.", "Toca las cuatro piquetas."]
+	text(Vector2(24,48), headings[s.build_stage], 28, ink, true)
+	button(Rect2(365,12,55,55), "×", "mini_close")
+	paragraph(Vector2(24,98), instructions[s.build_stage], 392, 24, ink)
+	var labels := ["Colocar", "Encajar", "Pulsa rápido", "Asegurar"]
+	match s.build_stage:
+		0:
+			var destination := tarp_panel_point(Vector2(560,235))
+			draw_circle(destination, 54, Color("efdfbb"))
+			draw_arc(destination, 53, 0, TAU, 36, Color("be8e3e"), 4)
+			draw_texture_rect(World.TARP, Rect2(tarp_panel_point(mini_piece) - Vector2(55,55), Vector2(110,110)), false)
+		1, 2:
+			var aligning := s.build_stage == 1
+			draw_texture_rect(World.FRAMED if aligning else World.RAISED, Rect2(110,168,220,220), false)
+			draw_rect(Rect2(32,433,376,32), Color("cdbf9e"))
+			if aligning:
+				draw_rect(Rect2(145,433,150,32), Color("77a878"))
+				var needle := (sin(elapsed * 2.9) + 1.0) * 0.5
+				draw_rect(Rect2(32 + needle * 376 - 4,425,8,48), Color("be5d40"))
+				text(Vector2(32,518), "Varillas encajadas: %d/2" % mini_success, 24, ink)
+			else:
+				draw_rect(Rect2(32,433,376 * clampf(mini_lift / LIFT_GOAL,0,1),32), Color("64a276"))
+		3:
+			draw_texture_rect(World.RAISED, Rect2(120,196,200,200), false)
+			var points := [Vector2(85,220), Vector2(355,220), Vector2(85,430), Vector2(355,430)]
+			for i in range(points.size()):
+				var point: Vector2 = points[i]
+				draw_circle(point, 32, Color("68a577") if mini_pegs[i] else Color("e9b15f"))
+				draw_arc(point, 34, 0, TAU, 28, ink, 3)
+				text(point + Vector2(-32,9), "OK" if mini_pegs[i] else str(i + 1), 26, ink, true, 64, HORIZONTAL_ALIGNMENT_CENTER)
+				clickables.append({"rect":mini_hit(Rect2(point - Vector2(37,37), Vector2(74,74))), "id":"peg%d" % i})
+	if toast_time > 0:
+		paragraph(Vector2(24,541), toast, 392, 19, Color("a05739"))
+	button(Rect2(24,594,392,70), labels[s.build_stage], "mini_action", true, 29)
+
+func tarp_panel_point(point: Vector2) -> Vector2:
+	if mobile_layout and portrait:
+		return Vector2((point.x - 410.0) * 0.52 + 220.0, point.y + 70.0)
+	return point
+
+func tarp_drag_point(pos: Vector2) -> Vector2:
+	var point := (pos - mini_rect.position) / mini_scale
+	if mobile_layout and portrait:
+		return Vector2((point.x - 220.0) / 0.52 + 410.0, point.y - 70.0)
+	return point
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -839,15 +897,15 @@ func _input(event: InputEvent) -> void:
 		if event.pressed: pointer_down(event.position, event.index)
 		else: pointer_up(event.position, event.index)
 	elif event is InputEventScreenDrag:
-		if dragging and mini and s.build_stage == 0: mini_piece = (event.position - mini_rect.position) / mini_scale
+		if dragging and mini and s.build_stage == 0: mini_piece = tarp_drag_point(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed: pointer_down(event.position, -1)
 		else: pointer_up(event.position, -1)
 	elif event is InputEventMouseMotion and dragging and mini and s.build_stage == 0:
-		mini_piece = (event.position - mini_rect.position) / mini_scale
+		mini_piece = tarp_drag_point(event.position)
 
 func pointer_down(pos: Vector2, index: int) -> void:
-	if mini and s.build_stage == 0 and pos.distance_to(mini_rect.position+mini_piece*mini_scale) < 75*mini_scale:
+	if mini and s.build_stage == 0 and pos.distance_to(mini_rect.position + tarp_panel_point(mini_piece) * mini_scale) < 75*mini_scale:
 		dragging = true
 		return
 	for entry in clickables:
