@@ -2,6 +2,9 @@ extends RefCounted
 class_name CampState
 
 const SAVE_PATH := "user://acampada-day1-v2.json"
+var day := 1
+var day_two_commissions := 0
+var media_count := 0
 var phase := "talk"
 var talked := {"Patricia": false, "Alejandro": false, "Marina": false}
 var collected := {"lona": false, "varillas": false, "piquetas": false}
@@ -24,6 +27,7 @@ var player := Vector2(650, 495)
 var minutes := 0.0
 
 func clock_hour() -> int:
+	if day == 2: return 22 if phase == "finished" else mini(21, 9 + floori((tents - 25) * 0.48))
 	if phase == "finished": return 22
 	return [16, 17, 19, 21][commissions]
 
@@ -51,7 +55,7 @@ func resources() -> int:
 func save_game() -> void:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null: return
-	f.store_string(JSON.stringify({"version":2,"phase":phase,"talked":talked,"collected":collected,"build_stage":build_stage,"respect":respect,"energy":energy,"health":health,"wellbeing":wellbeing,"cash":cash,"people":people,"capacity":capacity,"tents":tents,"pitch_swaps":pitch_swaps,"commissions":commissions,"delivery":delivery,"delivery_progress":delivery_progress,"material_boxes":material_boxes,"choice":choice,"x":player.x,"y":player.y,"minutes":minutes}))
+	f.store_string(JSON.stringify({"version":3,"day":day,"day_two_commissions":day_two_commissions,"media_count":media_count,"phase":phase,"talked":talked,"collected":collected,"build_stage":build_stage,"respect":respect,"energy":energy,"health":health,"wellbeing":wellbeing,"cash":cash,"people":people,"capacity":capacity,"tents":tents,"pitch_swaps":pitch_swaps,"commissions":commissions,"delivery":delivery,"delivery_progress":delivery_progress,"material_boxes":material_boxes,"choice":choice,"x":player.x,"y":player.y,"minutes":minutes}))
 	f.close()
 
 func load_game() -> bool:
@@ -59,7 +63,10 @@ func load_game() -> bool:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	if f == null: return false
 	var d = JSON.parse_string(f.get_as_text())
-	if not d is Dictionary or int(d.get("version", 0)) not in [1, 2]: return false
+	if not d is Dictionary or int(d.get("version", 0)) not in [1, 2, 3]: return false
+	day = clampi(int(d.get("day", 1)), 1, 2)
+	day_two_commissions = clampi(int(d.get("day_two_commissions", 0)), 0, 5)
+	media_count = clampi(int(d.get("media_count", 0)), 0, 3)
 	phase = str(d.get("phase", "talk"))
 	var previous: Dictionary = d.get("talked", {})
 	talked = {
@@ -76,7 +83,7 @@ func load_game() -> bool:
 	cash = int(d.get("cash", 12))
 	people = int(d.get("people", 4))
 	capacity = int(d.get("capacity", 0))
-	tents = clampi(int(d.get("tents", 0)), 0, 25)
+	tents = clampi(int(d.get("tents", 0)), 0, 50 if day == 2 else 25)
 	pitch_swaps = d.get("pitch_swaps", {})
 	commissions = clampi(int(d.get("commissions", 0)), 0, 3)
 	delivery = str(d.get("delivery", ""))

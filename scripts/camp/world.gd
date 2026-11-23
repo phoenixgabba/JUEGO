@@ -27,6 +27,8 @@ const CAMP_ORIGIN := Vector2(1025, 218)
 const CAMP_EAST := Vector2(0, 0.93)
 const CAMP_SOUTH := Vector2(-2.25, 0.19)
 const DAY_ONE_TENTS := 25
+const DAY_TWO_TENTS := 50
+const DayTwo = preload("res://scripts/camp/day_two.gd")
 const KITCHEN_TENTS := 12
 const COMMUNICATION_TENTS := 19
 const ENTRANCE := Vector2(650, 454)
@@ -112,13 +114,20 @@ static func next_pitch(s: CampState) -> Vector2:
 	return pitch_at(s, s.tents - 1)
 
 static func pitch_at(s: CampState, index: int) -> Vector2:
-	return day_one_pitches[int(s.pitch_swaps.get(str(index), index))]
+	var slot := int(s.pitch_swaps.get(str(index), index))
+	if slot < day_one_pitches.size():
+		return day_one_pitches[slot]
+	var new_slot := slot - day_one_pitches.size()
+	return Vector2(590 + (new_slot % 5) * 30, 306 + floori(new_slot / 5.0) * 19)
+
+static func tent_goal(s: CampState) -> int:
+	return DAY_TWO_TENTS if s.day == 2 else DAY_ONE_TENTS
 
 static func assign_pitch(s: CampState) -> bool:
 	var first := s.tents - 1
 	var best := -1
 	var distance := 16.0
-	for i in range(first, mini(first + 3, DAY_ONE_TENTS - 1)):
+	for i in range(first, mini(first + 3, tent_goal(s) - 1)):
 		var d := s.player.distance_to(pitch_at(s, i))
 		if d < distance:
 			best = i
@@ -198,6 +207,8 @@ func draw_pitch(c: Control, p: Vector2, index: int) -> void:
 	c.draw_texture_rect(TENT, Rect2(p - TENT_OFFSET, TENT_SIZE), false, CAMP_TINTS[index % CAMP_TINTS.size()])
 
 func npc_pos(n: String, s: CampState, t: float) -> Vector2:
+	if n == "Patricia" and s.day == 2 and s.phase == "commissions_two" and s.day_two_commissions == 0 and s.media_count == 0:
+		return DayTwo.MEDIA_POINTS[0]
 	if s.phase in ["commissions", "expansion", "finished"]:
 		return clear_spot(ORGANIZATION + Vector2(-22 + ["Patricia", "Alejandro", "Marina"].find(n) * 22, -14), s)
 	var p := Vector2.ZERO
@@ -254,10 +265,14 @@ func draw(c: Control, s: CampState, rect: Rect2, t: float, walking: bool, arriva
 		if s.build_stage >= 4: tex = TENT
 		c.draw_texture_rect(tex, Rect2(camp_build_point(s) - TENT_OFFSET, TENT_SIZE), false)
 	if s.phase == "expansion" and s.delivery == "assign":
-		for i in range(s.tents - 1, mini(s.tents + 2, DAY_ONE_TENTS - 1)):
+		for i in range(s.tents - 1, mini(s.tents + 2, tent_goal(s) - 1)):
 			var pitch := pitch_at(s, i)
 			c.draw_rect(Rect2(pitch - TENT_GROUND, TENT_GROUND * 2.0), Color("ffed9c"), false, 1.0)
 	# Characters are ordered by their feet, so overlapping still feels spatial.
+	for i in range(s.day_two_commissions):
+		var point: Vector2 = DayTwo.POINTS[i]
+		c.draw_circle(point, 8, Color("36594b"))
+		c.draw_arc(point, 8, 0, TAU, 20, Color("eed29b"), 1.5)
 	var actors: Array = MAP.scenery.duplicate()
 	actors.append_array([
 		{"pos":npc_pos("Patricia", s, t), "tex":PATRICIA},
@@ -285,6 +300,10 @@ func draw(c: Control, s: CampState, rect: Rect2, t: float, walking: bool, arriva
 			"returning": pos = delivery_point(s, ENTRY_APPROACH, ENTRANCE)
 			"placing": pos = delivery_point(s, ENTRANCE, next_pitch(s))
 		actors.append({"pos":pos, "tex":CROWD_TEXTURES[(s.tents - 1) % 4], "walking":s.delivery in ["leaving", "returning", "placing"]})
+	if s.day == 2 and s.delivery == "delegated":
+		var guest := delivery_point(s, ENTRY_APPROACH, next_pitch(s))
+		actors.append({"pos":guest, "tex":CROWD_TEXTURES[s.tents % 4], "walking":true})
+		actors.append({"pos":clear_spot(guest + Vector2(-12, 4), s), "tex":MARINA, "walking":true})
 	for i in range(arrival_positions.size()):
 		actors.append({"pos":arrival_positions[i], "tex":CROWD_TEXTURES[i % 4]})
 	for i in range(pitch_count(s)):
@@ -319,12 +338,22 @@ func map_locations(s: CampState, t: float) -> Array[Dictionary]:
 		locations.append({"label":"Almacén", "pos":SITE, "kind":"built"})
 	for i in range(s.commissions):
 		locations.append({"label":COMMISSION_NAMES[i], "pos":COMMISSION_POINTS[i], "kind":"built"})
+	for i in range(s.day_two_commissions):
+		locations.append({"label":DayTwo.NAMES[i], "pos":DayTwo.POINTS[i], "kind":"built"})
 	locations.append_array(objective_locations(s, t))
 	return locations
 
 func objective_locations(s: CampState, t: float) -> Array[Dictionary]:
 	var items: Array[Dictionary] = []
 	match s.phase:
+		"finished":
+			if s.day == 1: items.append({"label":"Empezar Día 2", "pos":ORGANIZATION, "kind":"goal"})
+		"meeting_two": items.append({"label":"Segunda asamblea", "pos":MEETING, "kind":"goal"})
+		"commissions_two":
+			if s.day_two_commissions == 0 and s.media_count < DayTwo.MEDIA_POINTS.size():
+				items.append({"label":DayTwo.MEDIA[s.media_count], "pos":DayTwo.MEDIA_POINTS[s.media_count], "kind":"goal"})
+			else:
+				items.append({"label":DayTwo.NAMES[s.day_two_commissions], "pos":DayTwo.POINTS[s.day_two_commissions], "kind":"goal"})
 		"talk":
 			for name in ["Patricia", "Alejandro", "Marina"]:
 				if not s.talked[name]:
